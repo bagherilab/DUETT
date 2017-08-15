@@ -34,7 +34,7 @@ shinyUI(
                
                titlePanel(h4("Column detail plotting")),
                textInput("ylim", label = "y axis range", value = "0,15", placeholder = "0,15"),
-               textInput("show_columns", label = "Columns to display", value = "1,11,14,37", placeholder = "1,11,14,37"),
+               textInput("show_columns", label = "Columns to display", value = "1,11,16,26,57", placeholder = "1,11,14,37"),
                checkboxInput('show_all_columns', 'Show all columns?', FALSE)
              )
       ),
@@ -57,8 +57,8 @@ shinyUI(
              wellPanel(
                titlePanel("Linear ramp parameters"),
                numericInput("ramp_length", label = "Ramp length", value = 40, min = 5, step = 1),
-               numericInput("p_value", label = "Ramp p-value", value = 0.1, min = 0, max = 1, step = 0.01),
-               numericInput("b_min", label = "Minimum beta coefficient", value = 0.15, min = 0, step = 0.01),
+               numericInput("p_value", label = "Ramp p-value", value = 0.0001, min = 0, max = 1, step = 0.0001),
+               numericInput("b_min", label = "Beta coefficient", value = 0.15, min = 0, step = 0.01),
                numericInput("dwp", label = "Durbin-Watson p-value", value = 0.01, min = 0, max = 1, step = 0.01),
                
                br(),

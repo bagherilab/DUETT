@@ -31,7 +31,6 @@ shinyServer(function(input, output) {
   
   get_update <- reactive({input$update})
   
-  # get_events <- reactive({
   get_events <- reactive({
     if (get_update() == 0) {
       return_list = NA
