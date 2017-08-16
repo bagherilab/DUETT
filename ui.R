@@ -62,6 +62,7 @@ shinyUI(
                numericInput("dwp", label = "Durbin-Watson p-value", value = 0.01, min = 0, max = 1, step = 0.01),
                
                br(),
+               tags$head(tags$style(HTML('#update{background-color:lightgreen}'))),
                actionButton("update", "Update plot")
              )
       )),
