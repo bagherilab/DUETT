@@ -5,51 +5,123 @@ rm(list=ls())
 source("support_functions/load_data.R")
 source("support_functions/ShapeSeq_events.R")
 source("support_functions/plotting/plot_dump_PID.R")
+source("support_functions/utility_functions.R")
+source("support_functions/plotting/make_visual.R")
 
 shinyServer(function(input, output) {
   
   #################### setup ####################
   
-  get_width <- reactive({width = input$width})
-  get_height <- reactive({height = input$height})
-  
-  get_ylim <- reactive({ylim = as.numeric(strsplit(input$ylim, ",")[[1]])})
-  get_show_columns <- reactive({show_columns = as.numeric(strsplit(input$show_columns, ",")[[1]])})
-  get_show_all <- reactive({input$show_all_columns})
-  get_num_plots <- reactive({
-    ifelse(get_show_all(), num_plots <- get_ncol(), num_plots <- length(get_show_columns()))
-    num_plots = ceiling(num_plots / 4)
-  })
-  get_parameters <- reactive({list(cutoffs = list(P = input$P, I = input$I, D = input$D, p_value = input$p_value, b_min = input$b_min, dwp = input$dwp), window_size = input$window_size, I_length = input$window_size, noise_length = input$noise_length, event_gap = input$event_gap)})
-  
-  get_ncol <- reactive({ncol(get_data())})
+  # file inputs and outputs
   get_data_file <- reactive({input$data_file})
-  get_data <- reactive({
-    ifelse(is.null(input$data_file), data_file <- "example_data.csv", data_file <- get_data_file()$name)
-    data_mat = load_data(data_file)
-  })
+  
+  # plotting parameters
+  get_width <- reactive({input$width})
+  get_height <- reactive({input$height})
+  get_numbering <- reactive({input$numbering})
+  get_numbering_interval <- reactive({input$numbering_interval})
+  get_ylim <- reactive({as.numeric(strsplit(input$ylim, ",")[[1]])})
+  get_columns_display <- reactive({input$column_display})
+  get_custom_columns <- reactive({as.numeric(strsplit(input$custom_columns, ",")[[1]])})
+  
+  # PID parameters
+  get_P <- reactive({input$P})
+  get_I <- reactive({input$I})
+  get_D <- reactive({input$D})
+  get_I_length <- reactive({input$window_size}) # not actually an input
+  get_window_size <- reactive({input$window_size})
+  get_noise_length <- reactive({input$noise_length})
+  get_event_gap <- reactive({input$event_gap})
+  
+  # linear ramp paramers
+  get_ramp_window <- reactive({input$ramp_length})
+  get_p_value <- reactive({input$p_value})
+  get_b_min <- reactive({input$b_min})
+  get_dwp <- reactive({input$dwp})
   
   get_update <- reactive({input$update})
+  
+  #################### calculate for events ####################
+  get_data <- reactive({
+    ifelse(is.null(input$data_file), data_file <- "example_data.csv", data_file <- get_data_file()$datapath)
+    data_mat = load_data(data_file)
+  })
+  get_ncol <- reactive({ncol(get_data())})
+  get_nrow <- reactive({nrow(get_data())})
+  
+  # PID values
+  calc_D_values <- reactive({
+    data_mat = get_data()
+    window_size = get_window_size()
+    D_values = sapply(1:get_ncol(), function(i) diff_data(data_mat[,i], window_size))
+  })
+  calc_I_values <- reactive({
+    D_values = calc_D_values()
+    num_row = get_nrow()
+    num_col = get_ncol()
+    I_values = matrix(NA, nrow = num_row, ncol = num_col)
+    for (n_col in 1:ncol(D_values)) {
+      I_values[(get_I_length()+1):num_row,n_col] = sapply(1:(num_row-get_I_length()), function(i) sum(D_values[i:(i+get_I_length()),n_col])) / get_I_length()
+    }
+    I_values
+  })
+  calc_P_values <- reactive({
+    D_values = calc_D_values()
+    P_values = D_values / (get_data() - D_values)
+  })
+  
+  # linear ramp values
+  get_linear_values <- reactive({
+    library(lmtest)
+    ramp_window = get_ramp_window()
+    data_mat = get_data()
+    p_values = data_mat * NA
+    betas = p_values
+    dwp = p_values
+    for (n_col in 1:ncol(p_values)) {
+      for (n_window in 1:(nrow(p_values) - ramp_window - 1)) {
+        x = 1:ramp_window
+        y = data_mat[n_window:(n_window + ramp_window - 1), n_col]
+        
+        if (!any(is.na(y))) {
+          lm_summary = summary(lm(y ~ x))
+          
+          p_values[[n_window + ramp_window - 1, n_col]] = lm_summary$coefficients[[2,4]]
+          betas[[n_window + ramp_window - 1, n_col]] = lm_summary$coefficients[[2,1]]
+          dwp[[n_window + ramp_window - 1, n_col]] = dwtest(y ~ x)$p.value
+        }
+      }
+    }
+    list(p_values = p_values, betas = betas, dwp = dwp)
+  })
   
   get_events <- reactive({
     if (get_update() == 0) {
       return_list = NA
     } else {
       # only output file when button is pressed (I don't get this logic)
-      isolate({return_list = do.call(ShapeSeq_events, c(list(get_data()), get_parameters()))})
+      isolate({
+        
+        D_values = calc_D_values()
+        I_values = calc_I_values()
+        P_values = calc_P_values()
+        linear_values = get_linear_values()
+        return_list = do.call(ShapeSeq_events, list(P_values, I_values, D_values, linear_values, get_data(), get_window_size(), get_I_length(), get_ramp_window(), get_noise_length(), get_event_gap(), cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), b_min = get_b_min(), dwp = get_dwp())))
+      })
     }
   })
   
-  make_quad_plot_func <- function(col_group, data_mat, event_locations, event_details) {
-    par(mfrow = c(2,2))
-    make_quad_plot(
-      col_group,
-      data_mat, event_locations, event_details,
-      cutoffs = cutoffs, 
-      event_colors = c("red", "blue"),
-      main = n_col,
-      ylim = get_ylim())
-  }
+  get_columns_to_show <- reactive({
+    columns_display = get_columns_display()
+    if (columns_display == 1) {
+      columns_to_show = get_custom_columns()
+    } else if (columns_display == 2) {
+      columns_to_show = 1:get_ncol()
+    } else  if (columns_display == 3) {
+      event_locations = get_events()[[1]]
+      columns_to_show = which(colSums((event_locations != 0) & !is.na(event_locations)) > 0)
+    }
+  })
   
   #################### plotting ####################
   
@@ -65,37 +137,36 @@ shinyServer(function(input, output) {
     # of when the expression is evaluated.
     
     # heatmap
-    local({output[["plot1"]] <- renderPlot({heatmap_plot(get_data(), event_locations)})})
+    local({output[["plot1"]] <- renderPlot({make_visual(get_data(), event_locations, numbering = get_numbering(), numbering_interval = get_numbering_interval())})})
     
     # details
-    ifelse(get_show_all(), show_columns <- 1:get_ncol(), show_columns <- get_show_columns())
     counter = 1
-    suppressWarnings(col_groups <- split(show_columns, rep(1:ceiling(length(show_columns) / 4), each = 4)))
+    columns_to_show = get_columns_to_show()
+    suppressWarnings(col_groups <- split(columns_to_show, rep(1:ceiling(length(columns_to_show) / 4), each = 4)))
     
     for (col_group in col_groups) {
       counter = counter + 1
       local({
         my_col_group <- col_group
-        my_i <- counter
-        plot_name = paste("plot", my_i, sep = "")
+        local_counter <- counter
+        plot_name = paste("plot", local_counter, sep = "")
         output[[plot_name]] <- renderPlot({
-          make_quad_plot(
+          make_col_detail_plots(
             my_col_group, 
             get_data(), event_locations, event_details,
-            cutoffs = get_parameters(), 
+            cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), b_min = get_b_min(), dwp = get_dwp()), 
             event_colors = c("red", "blue"),
             ylim = get_ylim())
         })
       })
     }
-    
   })
-  
   
   # interface to put plots to output
   output$plots <- renderUI({
     master_plotting()
-    plot_output_list <- lapply(1:(get_num_plots()+1), function(i) {
+    num_plots = ceiling(length(get_columns_to_show()) / 4)
+    plot_output_list <- lapply(1:(num_plots+1), function(i) {
       plotname <- paste("plot", i, sep="")
       plotOutput(plotname, height = 72 * get_height(), width = 72 * get_width())
     })
@@ -110,10 +181,23 @@ shinyServer(function(input, output) {
   output_table <- observe({
     if (input$table_output == 0) return()
     
-    return_list = get_events()
-    event_locations = return_list[[1]]
+    event_locations = get_events()[[1]]
     
     write.table(event_locations, file = paste(input$outfile, ".csv", sep = ""), sep = ",", quote = F)
+  })
+  
+  output_table_details <- observe({
+    
+    if (input$table_details_output == 0) return()
+    
+    event_details = get_events()[[2]]
+    
+    write.table(event_details$P_values, file = paste(input$outfile, "_P.csv", sep = ""), sep = ",", quote = F)
+    write.table(event_details$I_values, file = paste(input$outfile, "_I.csv", sep = ""), sep = ",", quote = F)
+    write.table(event_details$D_values, file = paste(input$outfile, "_D.csv", sep = ""), sep = ",", quote = F)
+    write.table(event_details$p_values, file = paste(input$outfile, "_p_values.csv", sep = ""), sep = ",", quote = F)
+    write.table(event_details$betas, file = paste(input$outfile, "_betas.csv", sep = ""), sep = ",", quote = F)
+    write.table(event_details$dwp, file = paste(input$outfile, "_dwp.csv", sep = ""), sep = ",", quote = F)
   })
   
   #################### output figure ####################
@@ -132,24 +216,25 @@ shinyServer(function(input, output) {
       
       filename = paste(input$outfile, ".pdf", sep = "")
       pdf(filename, width = get_width(), height = get_height())
-      heatmap_plot(get_data(), event_locations)
+      make_visual(get_data(), event_locations, numbering = get_numbering(), numbering_interval = get_numbering_interval())
       dev.off()
       
       filename = paste(input$outfile, "_columns.pdf", sep = "")
       pdf(filename, width = get_width(), height = get_height())
-      ifelse(get_show_all(), show_columns <- 1:get_ncol(), show_columns <- get_show_columns())
+      
       counter = 1
-      suppressWarnings(col_groups <- split(show_columns, rep(1:ceiling(length(show_columns) / 4), each = 4)))
+      columns_to_show = get_columns_to_show()
+      suppressWarnings(col_groups <- split(columns_to_show, rep(1:ceiling(length(columns_to_show) / 4), each = 4)))
       
       for (col_group in col_groups) {
         counter = counter + 1
         my_col_group <- col_group
         my_i <- counter
         plot_name = paste("plot", my_i, sep = "")
-        make_quad_plot(
+        make_col_detail_plots(
           my_col_group, 
           get_data(), event_locations, event_details,
-          cutoffs = get_parameters(), 
+          cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), b_min = get_b_min(), dwp = get_dwp()), 
           event_colors = c("red", "blue"),
           ylim = get_ylim())
       }

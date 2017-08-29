@@ -1,4 +1,4 @@
-bubble_chart <- function(circle_colors, circle_sizes, color_scale = NULL, xlab = "", ylab = "", x_axis_opt = NULL, y_axis_opt = NULL, bty = NULL, white_buffer = T, lwd = 1, main = "", shape = "circle", fg = "black") {
+bubble_chart <- function(circle_colors, circle_sizes, color_scale = NULL, xlab = "", ylab = "", x_axis_opt = NULL, y_axis_opt = NULL, bty = "n", white_buffer = T, lwd = 1, main = "", shape = "circle", fg = "black") {
   # color_colors are assumed to be between 0-1 and linearly scale withing color_scale
   
   if (is.null(color_scale)) {

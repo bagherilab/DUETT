@@ -117,17 +117,13 @@ plot_PID_cutoffs <- function(event_details, event_locations, n_col = NULL, cutof
 
 ########################################################################################
 
-make_quad_plot <- function(col_group, data_mat, location_list, event_details, event_colors, cutoffs, ylim = c(0, 1)) {
+make_col_detail_plots <- function(col_group, data_mat, location_list, event_details, event_colors, cutoffs, ylim = c(0, 1)) {
   
   par(mfrow = c(2,2))
   for (n_col in col_group) {
     # check for non-NAs
     if (sum(is.na(data_mat[,n_col, drop = F])) != nrow(data_mat)) {
-      plot_data(data_mat[,n_col, drop = F], location_list[[1]][,n_col, drop = F], n_col, event_colors = event_colors, ylim = ylim)
-      # plot_data(data_mat[,n_col, drop = F], location_list[[2]][,n_col, drop = F], n_col, event_colors = event_colors, main = main)
-      
-      # plot_PID_cutoffs(event_details[[1]], location_list[[1]][,n_col, drop = F], n_col, cutoffs, event_colors = event_colors)
-      # plot_PID_cutoffs(event_details[[2]], location_list[[2]][,n_col, drop = F], n_col, cutoffs, event_colors = event_colors)
+      plot_data(data_mat[,n_col, drop = F], location_list[,n_col, drop = F], n_col, event_colors = event_colors, ylim = ylim)
     }
   }
 }

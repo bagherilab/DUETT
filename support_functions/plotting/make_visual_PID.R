@@ -1,12 +1,11 @@
-make_visual_PID <- function(event_locations, event_draw = c(-3,-1,1,3), ramp_draw = c(-3,-2,2,3), event_colors = NULL, lwd = 1.2, label_axes = F) {
-  source("support_functions/plotting/make_visual.R")
-  source("support_functions/plotting/axis_labels.R")
+make_visual_PID <- function(event_locations, event_draw = c(-3,-1,1,3), ramp_draw = c(-3,-2,2,3), event_colors = NULL, lwd = 1.2) {
+  
+  source("support_functions/plotting/make_boxes.R")
   clear_color = "#FFFFFF00"
   
   if (is.null(event_colors)) {event_colors = c("red", "blue")}
   
-  plot(1, type = "n", xlim = c(0, ncol(event_locations)+1), ylim = c(0, nrow(event_locations)+1), xlab = "", ylab = "", xaxt = "n", yaxt = "n")
-  if (label_axes) {axis_labels(nrow(event_locations), ncol(event_locations))}
+  plot(1, type = "n", xlim = c(0, ncol(event_locations)+1), ylim = c(0, nrow(event_locations)+1), xlab = "", ylab = "", xaxt = "n", yaxt = "n", bty = "n")
   
   par(new = T)
   for (n_event in event_draw) {
@@ -19,7 +18,7 @@ make_visual_PID <- function(event_locations, event_draw = c(-3,-1,1,3), ramp_dra
       
       ifelse(n_event > 0, event_color <- event_colors[[1]], event_color <- event_colors[[2]])
       
-      make_visual(circle_colors, label_axes = F, lwd = lwd, fg = event_color, circle_size_override = circle_size_override, color_scale = clear_color)
+      make_boxes(data_mat = circle_colors, lwd = lwd, fg = event_color, circle_size_override = circle_size_override, color_scale = clear_color)
       par(new = T)
     }
   }
