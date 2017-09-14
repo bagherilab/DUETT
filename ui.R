@@ -30,7 +30,7 @@ shinyUI(
              wellPanel(
                titlePanel("Plotting parameters"),
                
-               sliderInput("width", label = "Figure width", min=3, max=20, value=10, ticks=F),
+               sliderInput("width", label = "Figure width", min=3, max=20, value=12, ticks=F),
                sliderInput("height", label = "Figure height", min=3, max=20, value=10, ticks=F),
                
                checkboxInput('numbering', 'Number rows/columns?', TRUE),
@@ -68,6 +68,9 @@ shinyUI(
                numericInput("p_value", label = "Ramp p-value", value = 0.0001, min = 0, max = 1, step = 0.0001),
                numericInput("b_min", label = "Beta coefficient", value = 0.15, min = 0, step = 0.01),
                numericInput("dwp", label = "Durbin-Watson p-value", value = 0.01, min = 0, max = 1, step = 0.01),
+               
+               br(),
+               numericInput("concurrent_distance", label = "Concurrency distance", value = 2, min = -1, step = 1),
                
                br(),
                tags$head(tags$style(HTML('#update{background-color:lightgreen}'))),

@@ -6,6 +6,7 @@ source("support_functions/load_data.R")
 source("support_functions/ShapeSeq_events.R")
 source("support_functions/plotting/plot_dump_PID.R")
 source("support_functions/utility_functions.R")
+source("support_functions/find_concurrent_events.R")
 source("support_functions/plotting/make_visual.R")
 
 shinyServer(function(input, output) {
@@ -39,11 +40,13 @@ shinyServer(function(input, output) {
   get_b_min <- reactive({input$b_min})
   get_dwp <- reactive({input$dwp})
   
+  get_concurrent_distance <- reactive({input$concurrent_distance})
+  
   get_update <- reactive({input$update})
   
   #################### calculate for events ####################
   get_data <- reactive({
-    ifelse(is.null(input$data_file), data_file <- "example_data.csv", data_file <- get_data_file()$datapath)
+    ifelse(is.null(input$data_file), data_file <- "example_data/SRP_EQ_Rep1_rho_table.txt", data_file <- get_data_file()$datapath)
     data_mat = load_data(data_file)
   })
   get_ncol <- reactive({ncol(get_data())})
@@ -71,7 +74,7 @@ shinyServer(function(input, output) {
   })
   
   # linear ramp values
-  get_linear_values <- reactive({
+  calc_linear_values <- reactive({
     library(lmtest)
     ramp_window = get_ramp_window()
     data_mat = get_data()
@@ -88,7 +91,13 @@ shinyServer(function(input, output) {
           
           p_values[[n_window + ramp_window - 1, n_col]] = lm_summary$coefficients[[2,4]]
           betas[[n_window + ramp_window - 1, n_col]] = lm_summary$coefficients[[2,1]]
-          dwp[[n_window + ramp_window - 1, n_col]] = dwtest(y ~ x)$p.value
+          
+          # check that y isn't all 0's (dwtest doesn't like that)
+          if (sum(sapply(y, function(i) i==0)) == length(y)) {
+            dwp[[n_window + ramp_window - 1, n_col]] = 1
+          } else {
+            dwp[[n_window + ramp_window - 1, n_col]] = dwtest(y ~ x)$p.value
+          }
         }
       }
     }
@@ -105,8 +114,12 @@ shinyServer(function(input, output) {
         D_values = calc_D_values()
         I_values = calc_I_values()
         P_values = calc_P_values()
-        linear_values = get_linear_values()
-        return_list = do.call(ShapeSeq_events, list(P_values, I_values, D_values, linear_values, get_data(), get_window_size(), get_I_length(), get_ramp_window(), get_noise_length(), get_event_gap(), cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), b_min = get_b_min(), dwp = get_dwp())))
+        linear_values = calc_linear_values()
+        
+        event_storage = do.call(ShapeSeq_events, list(P_values, I_values, D_values, linear_values, get_data(), get_window_size(), get_I_length(), get_ramp_window(), get_noise_length(), get_event_gap(), cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), b_min = get_b_min(), dwp = get_dwp())))
+        
+        concurrent_events = find_concurrent_events(event_storage[[1]], concurrent_distance = get_concurrent_distance(), comparison_point = "start", event_types = c(-3,-2,-1,1,2,3))
+        return_list = c(event_storage, list(concurrent_events))
       })
     }
   })
@@ -131,13 +144,14 @@ shinyServer(function(input, output) {
     if (identical(NA, return_list)) {return()}
     event_locations = return_list[[1]]
     event_details = return_list[[2]]
+    concurrent_events = return_list[[3]]
     
     # Need local so that each item gets its own number. Without it, the value
     # of i in the renderPlot() will be the same across all instances, because
     # of when the expression is evaluated.
     
     # heatmap
-    local({output[["plot1"]] <- renderPlot({make_visual(get_data(), event_locations, numbering = get_numbering(), numbering_interval = get_numbering_interval())})})
+    local({output[["plot1"]] <- renderPlot({make_visual(get_data(), event_locations, concurrent_events, numbering = get_numbering(), numbering_interval = get_numbering_interval())})})
     
     # details
     counter = 1
