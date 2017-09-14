@@ -30,8 +30,8 @@ shinyUI(
              wellPanel(
                titlePanel("Plotting parameters"),
                
-               sliderInput("width", label = "Figure width", min=3, max=20, value=12, ticks=F),
-               sliderInput("height", label = "Figure height", min=3, max=20, value=10, ticks=F),
+               sliderInput("width", label = "Figure width", min=3, max=20, value=14, ticks=F),
+               sliderInput("height", label = "Figure height", min=3, max=20, value=14, ticks=F),
                
                checkboxInput('numbering', 'Number rows/columns?', TRUE),
                conditionalPanel(
@@ -39,7 +39,7 @@ shinyUI(
                  numericInput("numbering_interval", label = "Numbering interval", value = 5, min = 1, step = 1)
                ),
                titlePanel(h4("Column detail plotting")),
-               textInput("ylim", label = "y axis range", value = "0,15", placeholder = "0,15"),
+               textInput("ylim", label = "y axis range", value = "0,20", placeholder = "0,20"),
                selectInput("column_display", label = "Columns to display?", choices = list("Custom columns" = 1, "All columns" = 2, "Columns with events" = 3), selected = 1),
                conditionalPanel(
                  condition = "input.column_display == 1",
