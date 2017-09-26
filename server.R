@@ -118,7 +118,7 @@ shinyServer(function(input, output) {
         
         event_storage = do.call(ShapeSeq_events, list(P_values, I_values, D_values, linear_values, get_data(), get_window_size(), get_I_length(), get_ramp_window(), get_noise_length(), get_event_gap(), cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), b_min = get_b_min(), dwp = get_dwp())))
         
-        concurrent_events = find_concurrent_events(event_storage[[1]], concurrent_distance = get_concurrent_distance(), comparison_point = "start", event_types = c(-3,-2,-1,1,2,3))
+        concurrent_events = find_concurrent_events(event_storage[[1]], concurrent_distance = get_concurrent_distance(), comparison_point = "start")
         return_list = c(event_storage, list(concurrent_events))
       })
     }
@@ -133,6 +133,22 @@ shinyServer(function(input, output) {
     } else  if (columns_display == 3) {
       event_locations = get_events()[[1]]
       columns_to_show = which(colSums((event_locations != 0) & !is.na(event_locations)) > 0)
+    }
+  })
+  
+  get_plotting_parameters <- reactive({
+    if (get_update() == 0) {
+      return_list = NA
+    } else {
+      # only output file when button is pressed (I don't get this logic)
+      isolate({
+        list(numbering = get_numbering(),
+             numbering_interval = get_numbering_interval(),
+             columns_to_show = get_columns_to_show(),
+             ylim = get_ylim(),
+             height = get_height(),
+             width = get_width())
+      })
     }
   })
   
@@ -151,11 +167,16 @@ shinyServer(function(input, output) {
     # of when the expression is evaluated.
     
     # heatmap
-    local({output[["plot1"]] <- renderPlot({make_visual(get_data(), event_locations, concurrent_events, numbering = get_numbering(), numbering_interval = get_numbering_interval())})})
+    local({output[["plot1"]] <- renderPlot({
+      make_visual(get_data(), event_locations, concurrent_events, 
+                  numbering = get_plotting_parameters()$numbering,
+                  numbering_interval = get_plotting_parameters()$numbering_interval)},
+      width = get_plotting_parameters()$width * 72,
+      height = get_plotting_parameters()$height * 72)})
     
     # details
     counter = 1
-    columns_to_show = get_columns_to_show()
+    columns_to_show = get_plotting_parameters()$columns_to_show
     suppressWarnings(col_groups <- split(columns_to_show, rep(1:ceiling(length(columns_to_show) / 4), each = 4)))
     
     for (col_group in col_groups) {
@@ -170,7 +191,7 @@ shinyServer(function(input, output) {
             get_data(), event_locations, event_details, concurrent_events,
             cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), b_min = get_b_min(), dwp = get_dwp()), 
             event_colors = c("red", "blue"),
-            ylim = get_ylim())
+            ylim = get_plotting_parameters()$ylim)
         })
       })
     }
@@ -179,10 +200,14 @@ shinyServer(function(input, output) {
   # interface to put plots to output
   output$plots <- renderUI({
     master_plotting()
-    num_plots = ceiling(length(get_columns_to_show()) / 4)
+    
+    # check if update was called at least once
+    if (identical(get_plotting_parameters(), NA)) {return()}
+    
+    num_plots = ceiling(length(get_plotting_parameters()$columns_to_show) / 4)
     plot_output_list <- lapply(1:(num_plots+1), function(i) {
       plotname <- paste("plot", i, sep="")
-      plotOutput(plotname, height = 72 * get_height(), width = 72 * get_width())
+      plotOutput(plotname, height = 72 * get_plotting_parameters()$height, width = 72 * get_plotting_parameters()$height)
     })
     
     # Convert the list to a tagList - this is necessary for the list of items
@@ -195,9 +220,12 @@ shinyServer(function(input, output) {
   output_table <- observe({
     if (input$table_output == 0) return()
     
-    event_locations = get_events()[[1]]
+    return_list = get_events()
+    event_locations = return_list[[1]]
+    concurrent_events = return_list[[3]]
     
-    write.table(event_locations, file = paste(input$outfile, ".csv", sep = ""), sep = ",", quote = F)
+    write.table(event_locations, file = paste(input$outfile, ".csv", sep = ""), sep = ",", quote = F, row.names = F)
+    write.table(concurrent_events, file = paste(input$outfile, "_concurrent_events.csv", sep = ""), sep = ",", quote = F, row.names = F)
   })
   
   output_table_details <- observe({
@@ -229,16 +257,21 @@ shinyServer(function(input, output) {
       event_details = return_list[[2]]
       concurrent_events = return_list[[3]]
       
+      width = get_plotting_parameters()$width
+      height = get_plotting_parameters()$height
       filename = paste(input$outfile, ".pdf", sep = "")
-      pdf(filename, width = get_width(), height = get_height())
-      make_visual(get_data(), event_locations, concurrent_events, numbering = get_numbering(), numbering_interval = get_numbering_interval())
+      
+      pdf(filename, width = width, height = height)
+      make_visual(get_data(), event_locations, concurrent_events, 
+                  numbering = get_plotting_parameters()$numbering, 
+                  numbering_interval = get_plotting_parameters()$numbering_interval)
       dev.off()
       
       filename = paste(input$outfile, "_columns.pdf", sep = "")
-      pdf(filename, width = get_width(), height = get_height())
+      pdf(filename, width = width, height = height)
       
       counter = 1
-      columns_to_show = get_columns_to_show()
+      columns_to_show = get_plotting_parameters()$columns_to_show
       suppressWarnings(col_groups <- split(columns_to_show, rep(1:ceiling(length(columns_to_show) / 4), each = 4)))
       
       for (col_group in col_groups) {
@@ -251,7 +284,7 @@ shinyServer(function(input, output) {
           get_data(), event_locations, event_details, concurrent_events,
           cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), b_min = get_b_min(), dwp = get_dwp()), 
           event_colors = c("red", "blue"),
-          ylim = get_ylim())
+          ylim = get_plotting_parameters()$ylim)
       }
       dev.off()
     })

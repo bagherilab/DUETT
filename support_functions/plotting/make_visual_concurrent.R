@@ -5,7 +5,7 @@ make_visual_concurrent <- function(concurrent_events, num_rows) {
   }
   
   source("support_functions/color_to_hex.R")
-  line_color = color_to_hex("forestgreen", 0)
+  line_color = color_to_hex("forestgreen", 0.4)
   
   if (nrow(concurrent_events) > 0) {
     for (n_row in 1:nrow(concurrent_events)) {

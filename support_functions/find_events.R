@@ -31,19 +31,27 @@ find_events <- function(P_values, I_values, D_values, linear_values, data_mat, w
     upramp_indices = which(p_values[,n_col] <= cutoffs$p_value & betas[,n_col] >= cutoffs$b_min & dwp[,n_col] >= cutoffs$dwp)
     
     # check that event 1 exists and flag for event 3.  Otherwise mark as event 2
-    upramp_e1_indices = upramp_indices[event_locations[upramp_indices, n_col] == 1]
+    upramp_upswing_indices = upramp_indices[event_locations[upramp_indices, n_col] == 1]
+    # check that event -1 exists (rare) and flag for event 1.5
+    upramp_downswing_indices = upramp_indices[event_locations[upramp_indices, n_col] == -1]
+    # reformat upramps
     upramp_indices = unique(unlist(sapply(upramp_indices, function(i) i:max(1, i - ramp_window + 1), simplify = F))) # extend ramp events to length of ramp
     event_locations[upramp_indices, n_col] = 2
-    event_locations[upramp_e1_indices, n_col] = 3
+    event_locations[upramp_upswing_indices, n_col] = 3
+    event_locations[upramp_downswing_indices, n_col] = 1.5
     
     # downramp
     downramp_indices = which(p_values[,n_col] <= cutoffs$p_value & betas[,n_col] <= -cutoffs$b_min & dwp[,n_col] >= cutoffs$dwp)
     
     # check that event 1 exists and flag for event 3.  Otherwise mark as event 2
-    downramp_e1_indices = downramp_indices[event_locations[downramp_indices, n_col] == -1]
+    downramp_downswing_indices = downramp_indices[event_locations[downramp_indices, n_col] == -1]
+    # check that event +1 exists (rare) and flag for event -1.5
+    downramp_upswing_indices = downramp_indices[event_locations[downramp_indices, n_col] == 1]
+    # reformat all upramps
     downramp_indices = unique(unlist(sapply(downramp_indices, function(i) i:max(1, i - ramp_window + 1), simplify = F))) # extend ramp events to length of ramp
     event_locations[downramp_indices, n_col] = -2
-    event_locations[downramp_e1_indices, n_col] = -3
+    event_locations[downramp_downswing_indices, n_col] = -3
+    event_locations[downramp_upswing_indices, n_col] = -1.5
     
   }
   

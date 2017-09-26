@@ -6,7 +6,7 @@ library(shiny)
 
 shinyUI(
   fluidPage(
-    titlePanel("ShapeSeq event detector"),
+    titlePanel("SHAPE-Seq event detector"),
     
     fluidRow(
       column(3, 

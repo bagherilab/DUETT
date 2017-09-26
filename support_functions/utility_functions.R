@@ -25,8 +25,10 @@ diff_data <- function(data_vector, window_size = 10, grow_window = F) {
 }
 
 ############################ find runs ############################
-find_runs <- function(location_swing, event_types = c(-2,-1,1,2)) {
+find_runs <- function(location_swing) {
+  
   event_points_new = matrix(NA, ncol = 5, nrow = 0, dimnames = list(NULL, c("col", "start", "middle", "end", "type")))
+  event_types = c(-3,-1.5,-1,1,1.5,3)
   for (n_col in 1:ncol(location_swing)) {
     temp = rle(location_swing[,n_col])
     relevant_indices = which(temp$values %in% event_types)
@@ -52,14 +54,19 @@ find_runs <- function(location_swing, event_types = c(-2,-1,1,2)) {
 
 ############################ clean events ############################
 
-clean_events <- function(event_locations, noise_length = 1, event_gap = 1, event_types = c(-1,1)) {
+clean_events <- function(event_locations, noise_length = 1, event_gap = 1) {
   
-  event_runs = find_runs(event_locations, event_types = event_types)
+  event_runs = find_runs(event_locations)
   num_events = nrow(event_runs)
   
   #### merge close events ####
   if (num_events > 0) {
     for (n_row in 1:(num_events - 1)) {
+      
+      # if only one event run, then break
+      if (num_events == 1) {
+        break
+      }
       
       # find other events in same column
       same_column_row = which(event_runs[(n_row+1):nrow(event_runs),1] == event_runs[[n_row,1]])
@@ -85,9 +92,14 @@ clean_events <- function(event_locations, noise_length = 1, event_gap = 1, event
   event_n3 = event_locations == -3
   event_locations[event_3] = 1
   event_locations[event_n3] = -1
+  # temporarily merge event1.5 into event1
+  event_1.5 = event_locations == 1.5
+  event_n1.5 = event_locations == -1.5
+  event_locations[event_1.5] = 1
+  event_locations[event_n1.5] = -1
   
   # redo event_runs
-  event_runs = find_runs(event_locations, event_types = event_types)
+  event_runs = find_runs(event_locations)
   num_events = nrow(event_runs)
   
   #### drop short events ####
@@ -107,6 +119,9 @@ clean_events <- function(event_locations, noise_length = 1, event_gap = 1, event
     # separate out event 3 (if still intact)
     event_locations[event_3 & event_locations == 1] = 3
     event_locations[event_n3 & event_locations == -1] = -3
+    # separate out event 1.5 (if still intact)
+    event_locations[event_1.5 & event_locations == 1] = 1.5
+    event_locations[event_n1.5 & event_locations == -1] = -1.5
     # if not intact, turn into event2
     event_locations[event_3 & event_locations == 0] = 2
     event_locations[event_n3 & event_locations == 0] = -2

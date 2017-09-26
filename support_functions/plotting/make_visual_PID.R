@@ -25,7 +25,8 @@ make_visual_PID <- function(event_locations, event_draw = c(-3,-1,1,3), ramp_dra
   
   for (ramp_type in ramp_draw) {
     
-    event_indices = which(event_locations == ramp_type*2 | event_locations == ramp_type*3, arr.ind = T)
+    # find ramps as 2's, 1.5's, or 3's
+    event_indices = which(event_locations == ramp_type*2 | event_locations == ramp_type*3 | event_locations == ramp_type*1.5, arr.ind = T)
     
     if (length(event_indices) > 0) {
       # sort by col then row

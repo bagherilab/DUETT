@@ -1,4 +1,4 @@
-find_concurrent_events <- function(event_locations, concurrent_distance = 2, comparison_point = "start", event_types = c(-3,-2,-1,1,2,3), merge_3 = 2) {
+find_concurrent_events <- function(event_locations, concurrent_distance = 2, comparison_point = "start", merge_3 = 2, merge_1.5 = 2) {
   
   concurrent_events = matrix(NA, nrow = 0, ncol = 4, dimnames = list(NULL, c("row1", "col1", "row2", "col2")))
   event_points = matrix(NA, ncol = 4, nrow = 0, dimnames = list(NULL, c("col", "start", "middle", "end")))
@@ -6,8 +6,11 @@ find_concurrent_events <- function(event_locations, concurrent_distance = 2, com
   # merge 3 into 2 or 1
   event_locations[event_locations == 3] = merge_3
   event_locations[event_locations == -3] = -merge_3
+  # merge 1.5 into 2 or 1
+  event_locations[event_locations == 1.5] = merge_3
+  event_locations[event_locations == -1.5] = -merge_3
   
-  event_points = find_runs(event_locations, event_types = event_types)
+  event_points = find_runs(event_locations)
   
   for (n_row1 in 1:(nrow(event_points)-1)) {
     for (n_row2 in (n_row1+1):nrow(event_points)) {
