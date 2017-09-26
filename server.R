@@ -167,7 +167,7 @@ shinyServer(function(input, output) {
         output[[plot_name]] <- renderPlot({
           make_col_detail_plots(
             my_col_group, 
-            get_data(), event_locations, event_details,
+            get_data(), event_locations, event_details, concurrent_events,
             cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), b_min = get_b_min(), dwp = get_dwp()), 
             event_colors = c("red", "blue"),
             ylim = get_ylim())
@@ -227,10 +227,11 @@ shinyServer(function(input, output) {
       return_list = get_events()
       event_locations = return_list[[1]]
       event_details = return_list[[2]]
+      concurrent_events = return_list[[3]]
       
       filename = paste(input$outfile, ".pdf", sep = "")
       pdf(filename, width = get_width(), height = get_height())
-      make_visual(get_data(), event_locations, numbering = get_numbering(), numbering_interval = get_numbering_interval())
+      make_visual(get_data(), event_locations, concurrent_events, numbering = get_numbering(), numbering_interval = get_numbering_interval())
       dev.off()
       
       filename = paste(input$outfile, "_columns.pdf", sep = "")
@@ -247,7 +248,7 @@ shinyServer(function(input, output) {
         plot_name = paste("plot", my_i, sep = "")
         make_col_detail_plots(
           my_col_group, 
-          get_data(), event_locations, event_details,
+          get_data(), event_locations, event_details, concurrent_events,
           cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), b_min = get_b_min(), dwp = get_dwp()), 
           event_colors = c("red", "blue"),
           ylim = get_ylim())

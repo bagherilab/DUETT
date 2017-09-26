@@ -1,5 +1,5 @@
 
-plot_data <- function(data_vector, event_locations, n_col, event_colors = c("green", "blue"), ylim = c(0,max(data_vector, na.rm = T)), mar = c(4,4,3,3)) {
+plot_data <- function(data_vector, event_locations, concurrent_events, n_col, event_colors = c("green", "blue"), ylim = c(0,max(data_vector, na.rm = T)), mar = c(4,4,3,3)) {
   
   num_points = length(data_vector)
   
@@ -38,9 +38,29 @@ plot_data <- function(data_vector, event_locations, n_col, event_colors = c("gre
         par(new = T)
         lm_obj = lm(data_vector[ramp_indices[[n_ramp]][ramp_start:ramp_end]] ~ ramp_indices[[n_ramp]][ramp_start:ramp_end])
         
-        # browser()
         plot(x = ramp_indices[[n_ramp]][ramp_start:ramp_end], y = lm_obj$fitted.values, pch = 23, axes = F, bty = "n", main = "", xlab = "", ylab = "", xlim = xlim, ylim = ylim, col = event_colors[[n_ramp]], lwd = 6, cex = 1.3, type = "l")
         ramp_start = ramp_end + 1
+      }
+    }
+  }
+  
+  # create concurrent lines
+  if (n_col %in% concurrent_events[, c("col1", "col2")]) {
+    
+    source("support_functions/color_to_hex.R")
+    line_color = color_to_hex("forestgreen", 0)
+    
+    relevant_rows = which(concurrent_events[, "col1"] == n_col | concurrent_events[, "col2"] == n_col)
+    for (n_relevant in relevant_rows) {
+      
+      if (concurrent_events[[n_relevant, "col1"]] == n_col) {
+        x_point = concurrent_events[[n_relevant, "row1"]]
+        lines(rep(x_point, 2), ylim, lty = 3, col = line_color)
+      }
+      
+      if (concurrent_events[[n_relevant, "col2"]] == n_col) {
+        x_point = concurrent_events[[n_relevant, "row2"]]
+        lines(rep(x_point, 2), ylim, lty = 3, col = line_color)
       }
     }
   }
@@ -117,13 +137,13 @@ plot_PID_cutoffs <- function(event_details, event_locations, n_col = NULL, cutof
 
 ########################################################################################
 
-make_col_detail_plots <- function(col_group, data_mat, location_list, event_details, event_colors, cutoffs, ylim = c(0, 1)) {
+make_col_detail_plots <- function(col_group, data_mat, location_list, event_details, concurrent_events, event_colors, cutoffs, ylim = c(0, 1)) {
   
   par(mfrow = c(2,2))
   for (n_col in col_group) {
     # check for non-NAs
     if (sum(is.na(data_mat[,n_col, drop = F])) != nrow(data_mat)) {
-      plot_data(data_mat[,n_col, drop = F], location_list[,n_col, drop = F], n_col, event_colors = event_colors, ylim = ylim)
+      plot_data(data_mat[,n_col, drop = F], location_list[,n_col, drop = F], concurrent_events, n_col, event_colors = event_colors, ylim = ylim)
     }
   }
 }

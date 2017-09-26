@@ -8,9 +8,9 @@ axis_labels <- function(n_row, n_col, numbering_interval = 5, cex = 1.5) {
   }
   
   # left labels
-  text(rep(1, floor(n_row/numbering_interval)), rev(c(1, seq(numbering_interval, n_row, numbering_interval))), labels = make_sequence(1, n_row), cex = cex, pos = 2)
+  text(rep(1, floor(n_row/numbering_interval)), c(n_row, seq(n_row - (numbering_interval-1), 1, -numbering_interval)), labels = make_sequence(1, n_row), cex = cex, pos = 2)
   # right labels
-  text(rep(n_col, floor(n_row/numbering_interval)), rev(c(1, seq(numbering_interval, n_row, numbering_interval))), labels = make_sequence(1, n_row), cex = cex, pos = 4)
+  text(rep(n_col, floor(n_row/numbering_interval)), c(n_row, seq(n_row - (numbering_interval-1), 1, -numbering_interval)), labels = make_sequence(1, n_row), cex = cex, pos = 4)
   # top labels
   text(c(1, seq(numbering_interval, n_col, by = numbering_interval)), rep(n_row, floor(n_col / numbering_interval)), make_sequence(1, n_col), cex = cex, pos = 3)
   # bottom labels
