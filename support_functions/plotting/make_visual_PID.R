@@ -32,7 +32,7 @@ make_visual_PID <- function(event_locations, event_draw = c(-3,-1,1,3), ramp_dra
       # sort by col then row
       event_indices = event_indices[order(event_indices[,"col"], event_indices[,"row"]),]
       # add lines for ramps
-      ramp_list = list(event_indices[1,]) # storage for different ramps
+      ramp_list = list(event_indices[1,, drop = F]) # storage for different ramps
       counter = 1
       for (n_row in 1:(nrow(event_indices) - 1)) { # search over the rows
         if (event_indices[[n_row, "col"]] == event_indices[[n_row+1, "col"]] & diff(event_indices[c(n_row, n_row+1), "row"]) == 1) { # if the next row is part of the same ramp
@@ -45,6 +45,9 @@ make_visual_PID <- function(event_locations, event_draw = c(-3,-1,1,3), ramp_dra
       
       for (n_ramp in ramp_list) {
         ifelse(ramp_type > 0, event_color <- event_colors[[1]], event_color <- event_colors[[2]])
+        
+        A = try(lines(x = n_ramp[,"col"], y = nrow(event_locations) - n_ramp[,"row"] + 1, col = event_color, lwd = 1.4), silent = T)
+        if (class(A) == "try-error") {browser()}
         lines(x = n_ramp[,"col"], y = nrow(event_locations) - n_ramp[,"row"] + 1, col = event_color, lwd = 1.4)
         par(new = T)
       }

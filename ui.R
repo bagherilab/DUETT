@@ -64,9 +64,9 @@ shinyUI(
       column(3, 
              wellPanel(
                titlePanel("Linear ramp parameters"),
-               numericInput("ramp_length", label = "Ramp length", value = 40, min = 5, step = 1),
+               numericInput("ramp_length", label = "Ramp length", value = 40, min = 0, step = 1),
                numericInput("p_value", label = "Ramp p-value", value = 0.0001, min = 0, max = 1, step = 0.0001),
-               numericInput("b_min", label = "Beta coefficient", value = 0.15, min = 0, step = 0.01),
+               numericInput("b_min", label = "Linear coefficient", value = 0.15, min = 0, step = 0.01),
                numericInput("dwp", label = "Durbin-Watson p-value", value = 0.01, min = 0, max = 1, step = 0.01),
                
                br(),

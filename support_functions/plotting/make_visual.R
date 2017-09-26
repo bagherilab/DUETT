@@ -17,10 +17,20 @@ make_visual <- function(data_mat, event_locations, concurrent_events, color_scal
   make_boxes(data_mat = data_mat, color_scale = grey_color, lwd = lwd, fg = clear_color)
   if (numbering) {axis_labels(n_row = nrow(data_mat), n_col = ncol(data_mat), numbering_interval = numbering_interval)}
   
+  # want -1.5 to be upswing events, and 1.5 to be downswing events.  swap them temporarily
+  event_1.5 = event_locations == 1.5
+  event_n1.5 = event_locations == -1.5
+  event_locations[event_1.5] = -1.5
+  event_locations[event_n1.5] = 1.5
+  
   # add swing and ramp events
   par(new = T)
   make_visual_PID(event_locations, event_draw = c(-1,1, -1.5,1.5, -3,3), ramp_draw = c(-1,1), event_colors = event_colors)
   par(new = T)
+  
+  # swap back
+  event_locations[event_1.5] = 1.5
+  event_locations[event_n1.5] = -1.5
   
   # add concurent events
   num_rows = nrow(event_locations)

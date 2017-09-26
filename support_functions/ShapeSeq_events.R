@@ -24,6 +24,7 @@ ShapeSeq_events <- function(P_values, I_values, D_values, linear_values, data_ma
   flip_indices = nrow(data_mat):1
   
   # clean events
+  # browser()
   event_locations = clean_events(event_locations, noise_length = noise_length, event_gap = event_gap)
   # event_locations = clean_events(event_locations, noise_length = 0, event_gap = event_gap, event_types = c(-3,-2,-1.5,1.5,2,3))
   

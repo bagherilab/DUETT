@@ -3,6 +3,11 @@ find_concurrent_events <- function(event_locations, concurrent_distance = 2, com
   concurrent_events = matrix(NA, nrow = 0, ncol = 4, dimnames = list(NULL, c("row1", "col1", "row2", "col2")))
   event_points = matrix(NA, ncol = 4, nrow = 0, dimnames = list(NULL, c("col", "start", "middle", "end")))
   
+  # check for one or no events
+  if (nrow(event_points) %in% 0:1) {
+    return(concurrent_events)
+  }
+  
   # merge 3 into 2 or 1
   event_locations[event_locations == 3] = merge_3
   event_locations[event_locations == -3] = -merge_3

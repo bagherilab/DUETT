@@ -8,9 +8,9 @@ plot_data <- function(data_vector, event_locations, concurrent_events, n_col, ev
   xlim = c(0, num_points)
   
   # check and set indices if swing_events are specified
-  upswing_indices = which(event_locations == 1 | event_locations == 3)
-  downswing_indices = which(event_locations == -1 | event_locations == -3)
-  ramp_indices = list(which(event_locations == 2 | event_locations == 3), which(event_locations == -2 | event_locations == -3))
+  upswing_indices = which(event_locations == 1 | event_locations == 3 | event_locations == -1.5)
+  downswing_indices = which(event_locations == -1 | event_locations == -3 | event_locations == 1.5)
+  ramp_indices = list(which(event_locations == 2 | event_locations == 3 | event_locations == 1.5), which(event_locations == -2 | event_locations == -3 | event_locations == -1.5))
   
   nonevent_data = data_vector
   if (length(c(upswing_indices, downswing_indices)) > 0) {

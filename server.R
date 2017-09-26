@@ -56,13 +56,14 @@ shinyServer(function(input, output) {
   calc_D_values <- reactive({
     data_mat = get_data()
     window_size = get_window_size()
-    D_values = sapply(1:get_ncol(), function(i) diff_data(data_mat[,i], window_size))
+    D_values = diff_data(data_mat, window_size)
   })
   calc_I_values <- reactive({
     D_values = calc_D_values()
     num_row = get_nrow()
     num_col = get_ncol()
     I_values = matrix(NA, nrow = num_row, ncol = num_col)
+    if (get_I_length() > num_row) {return(I_values)}
     for (n_col in 1:ncol(D_values)) {
       I_values[(get_I_length()+1):num_row,n_col] = sapply(1:(num_row-get_I_length()), function(i) sum(D_values[i:(i+get_I_length()),n_col])) / get_I_length()
     }
@@ -81,6 +82,14 @@ shinyServer(function(input, output) {
     p_values = data_mat * NA
     betas = p_values
     dwp = p_values
+    
+    if (ramp_window > nrow(data_mat)) { # error
+      warning("Ramp window is higher than number of rows!")
+      return(list(p_values = p_values, betas = betas, dwp = dwp))
+    } else if (ramp_window <= 0) {
+      return(list(p_values = p_values, betas = betas, dwp = dwp))
+    }
+    
     for (n_col in 1:ncol(p_values)) {
       for (n_window in 1:(nrow(p_values) - ramp_window - 1)) {
         x = 1:ramp_window
