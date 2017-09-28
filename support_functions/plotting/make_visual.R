@@ -1,4 +1,4 @@
-make_visual <- function(data_mat, event_locations, concurrent_events, color_scale = NULL, numbering = T, numbering_interval = 5, lwd = 0.01, fg = "black", circle_size_override = NULL) {
+make_visual <- function(data_mat, event_locations, concurrent_events, color_scale = NULL, numbering = T, numbering_interval = 5, axis_label_resize = 1, lwd = 0.01, fg = "black", circle_size_override = NULL) {
   
   source("support_functions/utility_functions.R")
   source("support_functions/color_to_hex.R")
@@ -15,7 +15,7 @@ make_visual <- function(data_mat, event_locations, concurrent_events, color_scal
   
   # make grey boxes for the data
   make_boxes(data_mat = data_mat, color_scale = grey_color, lwd = lwd, fg = clear_color)
-  if (numbering) {axis_labels(n_row = nrow(data_mat), n_col = ncol(data_mat), numbering_interval = numbering_interval)}
+  if (numbering) {axis_labels(n_row = nrow(data_mat), n_col = ncol(data_mat), numbering_interval = numbering_interval, axis_label_resize = axis_label_resize)}
   
   # want -1.5 to be upswing events, and 1.5 to be downswing events.  swap them temporarily
   event_1.5 = event_locations == 1.5

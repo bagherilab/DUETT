@@ -36,7 +36,8 @@ shinyUI(
                checkboxInput('numbering', 'Number rows/columns?', TRUE),
                conditionalPanel(
                  condition = "input.numbering == true",
-                 numericInput("numbering_interval", label = "Numbering interval", value = 5, min = 1, step = 1)
+                 numericInput("numbering_interval", label = "Numbering interval", value = 5, min = 1, step = 1),
+                 numericInput("axis_label_resize", label = "Resize axis labels", value = 1, min = 0, step = 0.1)
                ),
                titlePanel(h4("Column detail plotting")),
                textInput("ylim", label = "y axis range", value = "0,20", placeholder = "0,20"),

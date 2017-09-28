@@ -21,6 +21,7 @@ shinyServer(function(input, output) {
   get_height <- reactive({input$height})
   get_numbering <- reactive({input$numbering})
   get_numbering_interval <- reactive({input$numbering_interval})
+  get_axis_label_resize <- reactive({input$axis_label_resize})
   get_ylim <- reactive({as.numeric(strsplit(input$ylim, ",")[[1]])})
   get_columns_display <- reactive({input$column_display})
   get_custom_columns <- reactive({as.numeric(strsplit(input$custom_columns, ",")[[1]])})
@@ -99,7 +100,6 @@ shinyServer(function(input, output) {
         if (!any(is.na(y))) {
           lm_summary = summary(lm(y ~ x))
           
-          browser()
           p_values[[n_window + ramp_window - 1, n_col]] = lm_summary$coefficients[[2,4]]
           betas[[n_window + ramp_window - 1, n_col]] = lm_summary$coefficients[[2,1]]
           
@@ -155,6 +155,7 @@ shinyServer(function(input, output) {
       isolate({
         list(numbering = get_numbering(),
              numbering_interval = get_numbering_interval(),
+             axis_label_resize = get_axis_label_resize(),
              columns_to_show = get_columns_to_show(),
              ylim = get_ylim(),
              height = get_height(),
@@ -181,9 +182,8 @@ shinyServer(function(input, output) {
     local({output[["plot1"]] <- renderPlot({
       make_visual(get_data(), event_locations, concurrent_events, 
                   numbering = get_plotting_parameters()$numbering,
-                  numbering_interval = get_plotting_parameters()$numbering_interval)},
-      width = get_plotting_parameters()$width * 72,
-      height = get_plotting_parameters()$height * 72)})
+                  numbering_interval = get_plotting_parameters()$numbering_interval,
+                  axis_label_resize = get_plotting_parameters()$axis_label_resize)})})
     
     # details
     counter = 1
@@ -275,7 +275,8 @@ shinyServer(function(input, output) {
       pdf(filename, width = width, height = height)
       make_visual(get_data(), event_locations, concurrent_events, 
                   numbering = get_plotting_parameters()$numbering, 
-                  numbering_interval = get_plotting_parameters()$numbering_interval)
+                  numbering_interval = get_plotting_parameters()$numbering_interval,
+                  axis_label_resize = get_plotting_parameters()$axis_label_resize)
       dev.off()
       
       filename = paste(input$outfile, "_columns.pdf", sep = "")
