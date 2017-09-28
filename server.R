@@ -56,6 +56,7 @@ shinyServer(function(input, output) {
   calc_D_values <- reactive({
     data_mat = get_data()
     window_size = get_window_size()
+    if (window_size == 0) {D_values = data_mat * 0}
     D_values = diff_data(data_mat, window_size)
   })
   calc_I_values <- reactive({
@@ -86,7 +87,7 @@ shinyServer(function(input, output) {
     if (ramp_window > nrow(data_mat)) { # error
       warning("Ramp window is higher than number of rows!")
       return(list(p_values = p_values, betas = betas, dwp = dwp))
-    } else if (ramp_window <= 0) {
+    } else if (ramp_window <= 1) {
       return(list(p_values = p_values, betas = betas, dwp = dwp))
     }
     
@@ -98,6 +99,7 @@ shinyServer(function(input, output) {
         if (!any(is.na(y))) {
           lm_summary = summary(lm(y ~ x))
           
+          browser()
           p_values[[n_window + ramp_window - 1, n_col]] = lm_summary$coefficients[[2,4]]
           betas[[n_window + ramp_window - 1, n_col]] = lm_summary$coefficients[[2,1]]
           
