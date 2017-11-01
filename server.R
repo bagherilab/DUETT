@@ -3,6 +3,7 @@
 rm(list=ls())
 
 source("support_functions/load_data.R")
+source("support_functions/sanitize.R")
 source("support_functions/ShapeSeq_events.R")
 source("support_functions/plotting/plot_dump_PID.R")
 source("support_functions/utility_functions.R")
@@ -20,34 +21,40 @@ shinyServer(function(input, output) {
   get_width <- reactive({input$width})
   get_height <- reactive({input$height})
   get_numbering <- reactive({input$numbering})
-  get_numbering_interval <- reactive({input$numbering_interval})
-  get_axis_label_resize <- reactive({input$axis_label_resize})
-  get_ylim <- reactive({as.numeric(strsplit(input$ylim, ",")[[1]])})
+  get_numbering_interval <- reactive({sanitize(input$numbering_interval, "numbering_interval")})
+  get_axis_label_resize <- reactive({sanitize(input$axis_label_resize, "axis_label_resize")})
+  get_ylim <- reactive({sanitize(input$ylim, "ylim")})
   get_columns_display <- reactive({input$column_display})
-  get_custom_columns <- reactive({as.numeric(strsplit(input$custom_columns, ",")[[1]])})
+  get_custom_columns <- reactive({sanitize(input$custom_columns, "custom_columns")})
   
   # PID parameters
-  get_P <- reactive({input$P})
-  get_I <- reactive({input$I})
-  get_D <- reactive({input$D})
-  get_I_length <- reactive({input$window_size}) # not actually an input
-  get_window_size <- reactive({input$window_size})
-  get_noise_length <- reactive({input$noise_length})
-  get_event_gap <- reactive({input$event_gap})
+  get_P <- reactive({sanitize(input$P, "P")})
+  get_I <- reactive({sanitize(input$I, "I")})
+  get_D <- reactive({sanitize(input$D, "D")})
+  get_I_length <- reactive({sanitize(input$window_size, "window_size")}) # not actually an input
+  get_window_size <- reactive({sanitize(input$window_size, "window_size")})
+  get_event_gap <- reactive({sanitize(input$event_gap, "event_gap")})
+  get_noise_length <- reactive({sanitize(input$noise_length, "noise_length")})
   
   # linear ramp paramers
-  get_ramp_window <- reactive({input$ramp_length})
-  get_p_value <- reactive({input$p_value})
-  get_b_min <- reactive({input$b_min})
-  get_dwp <- reactive({input$dwp})
+  get_ramp_length <- reactive({sanitize(input$ramp_length, "ramp_length")})
+  get_p_value <- reactive({sanitize(input$p_value, "p_value")})
+  get_b_min <- reactive({sanitize(input$b_min, "b_min")})
+  get_dwp <- reactive({sanitize(input$dwp, "dwp")})
   
-  get_concurrent_distance <- reactive({input$concurrent_distance})
+  get_concurrent_distance <- reactive({sanitize(input$concurrent_distance, "concurrent_distance")})
+  get_conc_event_types <- reactive({
+    event_types = c()
+    if (input$conc_swings) {event_types = c(-1, event_types, 1)}
+    if (input$conc_ramps) {event_types = c(-2, event_types, 2)}
+    event_types
+  })
   
   get_update <- reactive({input$update})
   
   #################### calculate for events ####################
   get_data <- reactive({
-    ifelse(is.null(input$data_file), data_file <- "example_data/SRP_EQ_Rep1_rho_table.txt", data_file <- get_data_file()$datapath)
+    ifelse(is.null(input$data_file), data_file <- "example_data/SRP_Gln111_Rep1_rho_table.txt", data_file <- get_data_file()$datapath)
     data_mat = load_data(data_file)
   })
   get_ncol <- reactive({ncol(get_data())})
@@ -79,35 +86,35 @@ shinyServer(function(input, output) {
   # linear ramp values
   calc_linear_values <- reactive({
     library(lmtest)
-    ramp_window = get_ramp_window()
+    ramp_length = get_ramp_length()
     data_mat = get_data()
     p_values = data_mat * NA
     betas = p_values
     dwp = p_values
     
-    if (ramp_window > nrow(data_mat)) { # error
+    if (ramp_length > nrow(data_mat)) { # error
       warning("Ramp window is higher than number of rows!")
       return(list(p_values = p_values, betas = betas, dwp = dwp))
-    } else if (ramp_window <= 1) {
+    } else if (ramp_length <= 1) {
       return(list(p_values = p_values, betas = betas, dwp = dwp))
     }
     
     for (n_col in 1:ncol(p_values)) {
-      for (n_window in 1:(nrow(p_values) - ramp_window - 1)) {
-        x = 1:ramp_window
-        y = data_mat[n_window:(n_window + ramp_window - 1), n_col]
+      for (n_window in 1:(nrow(p_values) - ramp_length - 1)) {
+        x = 1:ramp_length
+        y = data_mat[n_window:(n_window + ramp_length - 1), n_col]
         
         if (!any(is.na(y))) {
           lm_summary = summary(lm(y ~ x))
           
-          p_values[[n_window + ramp_window - 1, n_col]] = lm_summary$coefficients[[2,4]]
-          betas[[n_window + ramp_window - 1, n_col]] = lm_summary$coefficients[[2,1]]
+          p_values[[n_window + ramp_length - 1, n_col]] = lm_summary$coefficients[[2,4]]
+          betas[[n_window + ramp_length - 1, n_col]] = lm_summary$coefficients[[2,1]]
           
           # check that y isn't all 0's (dwtest doesn't like that)
           if (sum(sapply(y, function(i) i==0)) == length(y)) {
-            dwp[[n_window + ramp_window - 1, n_col]] = 1
+            dwp[[n_window + ramp_length - 1, n_col]] = 1
           } else {
-            dwp[[n_window + ramp_window - 1, n_col]] = dwtest(y ~ x)$p.value
+            dwp[[n_window + ramp_length - 1, n_col]] = dwtest(y ~ x)$p.value
           }
         }
       }
@@ -127,9 +134,9 @@ shinyServer(function(input, output) {
         P_values = calc_P_values()
         linear_values = calc_linear_values()
         
-        event_storage = do.call(ShapeSeq_events, list(P_values, I_values, D_values, linear_values, get_data(), get_window_size(), get_I_length(), get_ramp_window(), get_noise_length(), get_event_gap(), cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), b_min = get_b_min(), dwp = get_dwp())))
+        event_storage = do.call(ShapeSeq_events, list(P_values, I_values, D_values, linear_values, get_data(), get_window_size(), get_I_length(), get_ramp_length(), get_noise_length(), get_event_gap(), cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), b_min = get_b_min(), dwp = get_dwp())))
         
-        concurrent_events = find_concurrent_events(event_storage[[1]], concurrent_distance = get_concurrent_distance(), comparison_point = "start")
+        concurrent_events = find_concurrent_events(event_storage[[1]], concurrent_distance = get_concurrent_distance(), comparison_point = "start", event_types = get_conc_event_types())
         return_list = c(event_storage, list(concurrent_events))
       })
     }
@@ -187,8 +194,9 @@ shinyServer(function(input, output) {
     
     # details
     counter = 1
+    num_plots = 4
     columns_to_show = get_plotting_parameters()$columns_to_show
-    suppressWarnings(col_groups <- split(columns_to_show, rep(1:ceiling(length(columns_to_show) / 4), each = 4)))
+    suppressWarnings(col_groups <- split(columns_to_show, rep(1:ceiling(length(columns_to_show) / num_plots), each = num_plots)))
     
     for (col_group in col_groups) {
       counter = counter + 1
@@ -236,7 +244,16 @@ shinyServer(function(input, output) {
     concurrent_events = return_list[[3]]
     
     write.table(event_locations, file = paste(input$outfile, ".csv", sep = ""), sep = ",", quote = F, row.names = F)
-    write.table(concurrent_events, file = paste(input$outfile, "_concurrent_events.csv", sep = ""), sep = ",", quote = F, row.names = F)
+    
+    if (nrow(concurrent_events) >= 1) {
+      event_type1 = sapply(1:nrow(concurrent_events), function(i) event_locations[[concurrent_events[i,1], concurrent_events[i,2]]])
+      event_type2 = sapply(1:nrow(concurrent_events), function(i) event_locations[[concurrent_events[i,3], concurrent_events[i,4]]])
+    } else {
+      event_type1 = c()
+      event_type2 = c()
+    }
+    concurrent_events_table = cbind(concurrent_events, event_type1, event_type2)
+    write.table(concurrent_events_table, file = paste(input$outfile, "_concurrent_events.csv", sep = ""), sep = ",", quote = F, row.names = F)
   })
   
   output_table_details <- observe({

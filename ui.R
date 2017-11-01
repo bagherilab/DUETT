@@ -41,7 +41,7 @@ shinyUI(
                ),
                titlePanel(h4("Column detail plotting")),
                textInput("ylim", label = "y axis range", value = "0,20", placeholder = "0,20"),
-               selectInput("column_display", label = "Columns to display?", choices = list("Custom columns" = 1, "All columns" = 2, "Columns with events" = 3), selected = 1),
+               selectInput("column_display", label = "Columns to display?", choices = list("Custom columns" = 1, "All columns" = 2, "Columns with events" = 3), selected = 3),
                conditionalPanel(
                  condition = "input.column_display == 1",
                  textInput("custom_columns", label = "Columns to display", value = "1,11,16,26,57", placeholder = "1,11,14,37"))
@@ -67,14 +67,15 @@ shinyUI(
                titlePanel("Linear ramp parameters"),
                numericInput("ramp_length", label = "Ramp length", value = 40, min = 0, step = 1),
                numericInput("p_value", label = "Ramp p-value", value = 0.0001, min = 0, max = 1, step = 0.0001),
-               numericInput("b_min", label = "Linear coefficient", value = 0.15, min = 0, step = 0.01),
-               numericInput("dwp", label = "Durbin-Watson p-value", value = 0.01, min = 0, max = 1, step = 0.01),
+               numericInput("b_min", label = "Linear coefficient", value = 0.1, min = 0, step = 0.01),
+               numericInput("dwp", label = "Durbin-Watson p-value", value = 0.001, min = 0, max = 1, step = 0.01),
                
                br(),
                numericInput("concurrent_distance", label = "Concurrency distance", value = 2, min = -1, step = 1),
-               
-               br(),
                tags$head(tags$style(HTML('#update{background-color:lightgreen}'))),
+               checkboxInput('conc_ramps', 'Ramp events?', FALSE),
+               checkboxInput('conc_swings', 'Swing events?', TRUE),
+               br(),
                actionButton("update", "Update plot")
              )
       )),

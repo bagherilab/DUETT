@@ -36,10 +36,9 @@ diff_data <- function(data_mat, window_size = 10, grow_window = F) {
 }
 
 ############################ find runs ############################
-find_runs <- function(location_swing) {
+find_runs <- function(location_swing, event_types = c(-3,-1.5,-1,1,1.5,3)) {
   
   event_points_new = matrix(NA, ncol = 5, nrow = 0, dimnames = list(NULL, c("col", "start", "middle", "end", "type")))
-  event_types = c(-3,-1.5,-1,1,1.5,3)
   for (n_col in 1:ncol(location_swing)) {
     temp = rle(location_swing[,n_col])
     relevant_indices = which(temp$values %in% event_types)

@@ -6,7 +6,7 @@ if(length(new.packages)) install.packages(new.packages)
 
 #######
 
-ShapeSeq_events <- function(P_values, I_values, D_values, linear_values, data_mat, window_size = 9, I_length = 9, ramp_window = 40, noise_length = 2, event_gap = 1, cutoffs = list(P = 1/4, I = 0.8, D = 0.8, p_value = 0.01 / (96*124), b_min = 0.15, dwp = 0.01), numbering = T, numbering_interval = 5) {
+ShapeSeq_events <- function(P_values, I_values, D_values, linear_values, data_mat, window_size = 9, I_length = 9, ramp_length = 40, noise_length = 2, event_gap = 1, cutoffs = list(P = 1/4, I = 0.8, D = 0.8, p_value = 0.0001, b_min = 0.15, dwp = 0.01), numbering = T, numbering_interval = 5) {
   
   source("support_functions/plotting/make_visual.R")
   source("support_functions/plotting/make_visual_PID.R")
@@ -16,7 +16,7 @@ ShapeSeq_events <- function(P_values, I_values, D_values, linear_values, data_ma
   #############################################
   grow_window = F
   
-  return_list = find_events(P_values, I_values, D_values, linear_values, data_mat, window_size, cutoffs, I_length = I_length, ramp_window = ramp_window, grow_window = grow_window)
+  return_list = find_events(P_values, I_values, D_values, linear_values, data_mat, window_size, cutoffs, I_length = I_length, ramp_length = ramp_length, grow_window = grow_window)
   
   event_locations = return_list$event_locations
   event_details = return_list[2:10]
@@ -26,7 +26,6 @@ ShapeSeq_events <- function(P_values, I_values, D_values, linear_values, data_ma
   # clean events
   # browser()
   event_locations = clean_events(event_locations, noise_length = noise_length, event_gap = event_gap)
-  # event_locations = clean_events(event_locations, noise_length = 0, event_gap = event_gap, event_types = c(-3,-2,-1.5,1.5,2,3))
   
   return(list(event_locations, event_details))
 }
