@@ -16,13 +16,17 @@ shinyUI(
              wellPanel(
                titlePanel("File inputs and outputs"),
                fileInput("data_file", "Input data file"),
+               checkboxInput('diverging', "Diverging data?", FALSE),
                textInput("outfile", "Output file name", value = "example_output", placeholder = "example_output"),
                actionButton("table_output", label = "Print event file"),
                actionButton("table_UI_settings", label = "Print UI settings"),
                actionButton("table_details_output", label = "Print details files"),
                br(),
                br(),
-               actionButton("graph_output", label = "Make figure pdf file")
+               actionButton("graph_output", label = "Make figure pdf file"),
+               
+               sliderInput("width", label = "Figure width", min=3, max=20, value=14, ticks=F),
+               sliderInput("height", label = "Figure height", min=3, max=20, value=14, ticks=F)
              )
       ),
       
@@ -31,8 +35,7 @@ shinyUI(
              wellPanel(
                titlePanel("Plotting parameters"),
                
-               sliderInput("width", label = "Figure width", min=3, max=20, value=14, ticks=F),
-               sliderInput("height", label = "Figure height", min=3, max=20, value=14, ticks=F),
+               checkboxInput('log_colors', 'Log the colors?', FALSE),
                
                checkboxInput('numbering', 'Number rows/columns?', TRUE),
                conditionalPanel(

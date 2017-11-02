@@ -16,10 +16,12 @@ shinyServer(function(input, output) {
   
   # file inputs and outputs
   get_data_file <- reactive({input$data_file})
-  
-  # plotting parameters
+  get_diverging <- reactive({input$diverging})
   get_width <- reactive({input$width})
   get_height <- reactive({input$height})
+  
+  # plotting parameters
+  get_log_colors <- reactive({input$log_colors})
   get_numbering <- reactive({input$numbering})
   get_numbering_interval <- reactive({sanitize(input$numbering_interval, "numbering_interval")})
   get_axis_label_resize <- reactive({sanitize(input$axis_label_resize, "axis_label_resize")})
@@ -81,7 +83,7 @@ shinyServer(function(input, output) {
   })
   calc_P_values <- reactive({
     D_values = calc_D_values()
-    P_values = D_values / (get_data() - D_values)
+    P_values = D_values / abs(get_data() - D_values)
   })
   
   # linear ramp values
@@ -111,8 +113,8 @@ shinyServer(function(input, output) {
           p_values[[n_window + ramp_length - 1, n_col]] = lm_summary$coefficients[[2,4]]
           betas[[n_window + ramp_length - 1, n_col]] = lm_summary$coefficients[[2,1]]
           
-          # check that y isn't all 0's (dwtest doesn't like that)
-          if (sum(sapply(y, function(i) i==0)) == length(y)) {
+          # check that y is not all the same (dwtest doesn't like that)
+          if (length(unique(y)) == 1) {
             dwp[[n_window + ramp_length - 1, n_col]] = 1
           } else {
             dwp[[n_window + ramp_length - 1, n_col]] = dwtest(y ~ x)$p.value
@@ -135,8 +137,9 @@ shinyServer(function(input, output) {
         P_values = calc_P_values()
         linear_values = calc_linear_values()
         
-        event_storage = do.call(ShapeSeq_events, list(P_values, I_values, D_values, linear_values, get_data(), get_window_size(), get_I_length(), get_ramp_length(), get_noise_length(), get_event_gap(), cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), linear_coeff = get_linear_coeff(), dwp = get_dwp())))
+        event_storage = do.call(ShapeSeq_events, list(P_values, I_values, D_values, linear_values, get_data(), get_window_size(), get_I_length(), get_ramp_length(), get_noise_length(), get_event_gap(), cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), linear_coeff = get_linear_coeff(), dwp = get_dwp()), diverging = get_diverging()))
         
+        # browser()
         concurrent_events = find_concurrent_events(event_storage[[1]], concurrent_distance = get_concurrent_distance(), comparison_point = "start", event_types = get_conc_event_types())
         return_list = c(event_storage, list(concurrent_events))
       })
@@ -161,14 +164,16 @@ shinyServer(function(input, output) {
     } else {
       # only output file when button is pressed (I don't get this logic)
       isolate({
-        list(numbering = get_numbering(),
+        list(log_colors = get_log_colors(),
+             numbering = get_numbering(),
              numbering_interval = get_numbering_interval(),
              axis_label_resize = get_axis_label_resize(),
              box_resize = get_box_resize(),
              columns_to_show = get_columns_to_show(),
              ylim = get_ylim(),
              height = get_height(),
-             width = get_width())
+             width = get_width(),
+             diverging = get_diverging())
       })
     }
   })
@@ -189,15 +194,16 @@ shinyServer(function(input, output) {
     
     # heatmap
     local({output[["plot1"]] <- renderPlot({
-      make_visual(get_data(), event_locations, concurrent_events, 
+      make_visual(get_data(), event_locations, concurrent_events, get_plotting_parameters()$log_colors,
                   numbering = get_plotting_parameters()$numbering,
                   numbering_interval = get_plotting_parameters()$numbering_interval,
                   axis_label_resize = get_plotting_parameters()$axis_label_resize,
-                  box_resize = get_plotting_parameters()$box_resize)})})
+                  box_resize = get_plotting_parameters()$box_resize,
+                  diverging = get_plotting_parameters()$diverging)})})
     
     # details
     counter = 1
-    num_plots = 4
+    num_plots = 4 # doesn't actually work
     columns_to_show = get_plotting_parameters()$columns_to_show
     suppressWarnings(col_groups <- split(columns_to_show, rep(1:ceiling(length(columns_to_show) / num_plots), each = num_plots)))
     
@@ -248,7 +254,6 @@ shinyServer(function(input, output) {
     
     write.table(event_locations, file = paste(input$outfile, ".csv", sep = ""), sep = ",", quote = F, row.names = F)
    
-    browser() 
     list(window_size = get_window_size(), I_length = get_I_length(), ramp_length = get_ramp_length(), noise_length = get_noise_length(), event_gap = get_event_gap(), P = get_P(), I = get_I(), D = get_D(), ramp_p_value = get_p_value(), linear_coeff = get_linear_coeff(), dwp = get_dwp(), concurrent_distance = get_concurrent_distance(), concurrent_event_types = get_conc_event_types())
                                                                                                 
     if (nrow(concurrent_events) >= 1) {
@@ -308,11 +313,12 @@ shinyServer(function(input, output) {
       filename = paste(input$outfile, ".pdf", sep = "")
       
       pdf(filename, width = width, height = height)
-      make_visual(get_data(), event_locations, concurrent_events, 
+      make_visual(get_data(), event_locations, concurrent_events, get_plotting_parameters()$log_colors,
                   numbering = get_plotting_parameters()$numbering, 
                   numbering_interval = get_plotting_parameters()$numbering_interval,
                   axis_label_resize = get_plotting_parameters()$axis_label_resize,
-                  box_resize = get_plotting_parameters()$box_resize)
+                  box_resize = get_plotting_parameters()$box_resize,
+                  diverging = get_plotting_parameters()$diverging)
       dev.off()
       
       filename = paste(input$outfile, "_columns.pdf", sep = "")
