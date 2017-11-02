@@ -16,9 +16,11 @@ for (n_rep in 1:3) {
   
   subtract_data = raw_data_10 - raw_data_0
   
-  # normalize between 0 and 1
-  subtract_data = subtract_data + abs(min(subtract_data, na.rm = T))
-  # subtract_data = subtract_data / max(subtract_data, na.rm = T)
+  # try logging the data
+  # negative_values = subtract_data < 0 & !is.na(subtract_data)
+  # positive_values = subtract_data > 0 & !is.na(subtract_data)
+  # subtract_data[negative_values] = -log2(abs(subtract_data[negative_values]) + 1)
+  # subtract_data[positive_values] = log2(subtract_data[positive_values] + 1)
   
   write.table(subtract_data, sep = "\t", file = paste("F_subtract_", n_rep, ".txt", sep = ""), col.names = F, row.names = F)
 }
