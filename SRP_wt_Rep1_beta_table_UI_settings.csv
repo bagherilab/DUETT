@@ -1,0 +1,26 @@
+V1
+axis_label_resize,1
+box_resize,1
+column_display,3
+concurrent_distance,2
+concurrent_ramps,FALSE
+concurrent_swings,TRUE
+custom_columns,1,11,16,26,57
+D,0.8
+data_file,list(name = "SRP_wt_Rep1_rho_table.txt", size = 167612, type = "text/plain", datapath = "/tmp/RtmpYf74tc/b240433295a777151bb67840/0.txt")
+diverging,FALSE
+dwp,0.001
+event_gap,1
+height,14
+I,0.8
+linear_coeff,0.15
+noise_length,2
+numbering,TRUE
+numbering_interval,10
+outfile,SRP_wt_Rep1_beta_table
+P,0.25
+p_value,1e-04
+ramp_length,40
+width,14
+window_size,9
+ylim,0,20
