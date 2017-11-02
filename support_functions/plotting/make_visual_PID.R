@@ -46,8 +46,8 @@ make_visual_PID <- function(event_locations, event_draw = c(-3,-1,1,3), ramp_dra
       for (n_ramp in ramp_list) {
         ifelse(ramp_type > 0, event_color <- event_colors[[1]], event_color <- event_colors[[2]])
         
-        A = try(lines(x = n_ramp[,"col"], y = nrow(event_locations) - n_ramp[,"row"] + 1, col = event_color, lwd = 1.4), silent = T)
-        if (class(A) == "try-error") {browser()}
+        # line_error = try(lines(x = n_ramp[,"col"], y = nrow(event_locations) - n_ramp[,"row"] + 1, col = event_color, lwd = 1.4), silent = T)
+        # if (class(line_error) == "try-error") {browser()}
         lines(x = n_ramp[,"col"], y = nrow(event_locations) - n_ramp[,"row"] + 1, col = event_color, lwd = 1.4)
         par(new = T)
       }

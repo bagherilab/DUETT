@@ -38,6 +38,7 @@ plot_data <- function(data_vector, event_locations, concurrent_events, n_col, ev
         par(new = T)
         lm_obj = lm(data_vector[ramp_indices[[n_ramp]][ramp_start:ramp_end]] ~ ramp_indices[[n_ramp]][ramp_start:ramp_end])
         
+        # browser()
         plot(x = ramp_indices[[n_ramp]][ramp_start:ramp_end], y = lm_obj$fitted.values, pch = 23, axes = F, bty = "n", main = "", xlab = "", ylab = "", xlim = xlim, ylim = ylim, col = event_colors[[n_ramp]], lwd = 6, cex = 1.3, type = "l")
         ramp_start = ramp_end + 1
       }
@@ -48,7 +49,8 @@ plot_data <- function(data_vector, event_locations, concurrent_events, n_col, ev
   if (n_col %in% concurrent_events[, c("col1", "col2")]) {
     
     source("support_functions/color_to_hex.R")
-    line_color = color_to_hex("forestgreen", 0)
+    # line_color = color_to_hex("forestgreen", 0)
+    line_color = color_to_hex("orange", 0.4)
     
     relevant_rows = which(concurrent_events[, "col1"] == n_col | concurrent_events[, "col2"] == n_col)
     for (n_relevant in relevant_rows) {

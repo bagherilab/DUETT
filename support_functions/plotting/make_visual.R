@@ -1,4 +1,4 @@
-make_visual <- function(data_mat, event_locations, concurrent_events, color_scale = NULL, numbering = T, numbering_interval = 5, axis_label_resize = 1, lwd = 0.01, fg = "black", circle_size_override = NULL, box_resize = 1) {
+make_visual <- function(data_mat, event_locations, concurrent_events, log_colors = F, color_scale = NULL, numbering = T, numbering_interval = 5, axis_label_resize = 1, lwd = 0.01, fg = "black", circle_size_override = NULL, box_resize = 1, diverging = F) {
   
   source("support_functions/utility_functions.R")
   source("support_functions/color_to_hex.R")
@@ -7,15 +7,26 @@ make_visual <- function(data_mat, event_locations, concurrent_events, color_scal
   source("support_functions/plotting/make_visual_PID.R")
   source("support_functions/plotting/make_visual_concurrent.R")
   
+  if (log_colors) {
+    negative_values = data_mat < 0 & !is.na(data_mat)
+    positive_values = data_mat > 0 & !is.na(data_mat)
+    data_mat[negative_values] = -log2(abs(data_mat[negative_values]) + 1)
+    data_mat[positive_values] = log2(data_mat[positive_values] + 1)
+  }
+  
   # set colors
   event_colors = list(upswing = color_to_hex("red", 0.1), downswing = color_to_hex("blue", 0.1)) # transparent
   # event_colors = list(upswing = color_to_hex("red", 0), downswing = color_to_hex("blue", 0)) # not transparent
   clear_color = color_to_hex("white", 1)
   library(RColorBrewer)
-  grey_color = colorRampPalette(brewer.pal(n = 7, name ="Greys"))(100)
+  if (diverging) {
+    base_color = rev(colorRampPalette(brewer.pal(n=7,name="PRGn"))(100))
+  } else {
+    base_color = colorRampPalette(brewer.pal(n = 7, name ="Greys"))(100)
+  }
   
   # make grey boxes for the data
-  make_boxes(data_mat = data_mat, color_scale = grey_color, lwd = lwd, fg = clear_color, box_resize = box_resize)
+  make_boxes(data_mat = data_mat, color_scale = base_color, lwd = lwd, fg = clear_color, box_resize = box_resize, diverging = diverging)
   if (numbering) {axis_labels(n_row = nrow(data_mat), n_col = ncol(data_mat), numbering_interval = numbering_interval, axis_label_resize = axis_label_resize)}
   
   # want -1.5 to be upswing events, and 1.5 to be downswing events.  swap them temporarily
