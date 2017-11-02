@@ -25,6 +25,7 @@ sanitize <- function(value, function_call) {
   switch(function_call,
          numbering_interval = sanitize_types <- c("integer"),
          axis_label_resize = sanitize_types <- c("positive"),
+         box_resize = sanitize_types <- c("positive"),
          P = sanitize_types <- c("positive"),
          I = sanitize_types <- c("positive"),
          D = sanitize_types <- c("positive"),
@@ -33,7 +34,7 @@ sanitize <- function(value, function_call) {
          noise_length = sanitize_types <- c("positive", "integer"),
          ramp_length = sanitize_types <- c("positive", "integer"),
          p_value = sanitize_types <- c("positive", "between 0 and 1"),
-         b_min = sanitize_types <- c("positive"),
+         linear_coeff = sanitize_types <- c("positive"),
          dwp = sanitize_types <- c("positive", "between 0 and 1"),
          concurrent_distance = sanitize_types <- c("positive")
   )
@@ -41,7 +42,7 @@ sanitize <- function(value, function_call) {
   if (is.null(sanitize_types)) {
     print(function_call)
     print(value)
-    stop("You screwed up code Albert")
+    stop("You screwed up sanitization code Albert")
   }
   
   warn_flag = F

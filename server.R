@@ -23,6 +23,7 @@ shinyServer(function(input, output) {
   get_numbering <- reactive({input$numbering})
   get_numbering_interval <- reactive({sanitize(input$numbering_interval, "numbering_interval")})
   get_axis_label_resize <- reactive({sanitize(input$axis_label_resize, "axis_label_resize")})
+  get_box_resize <- reactive({sanitize(input$box_resize, "box_resize")})
   get_ylim <- reactive({sanitize(input$ylim, "ylim")})
   get_columns_display <- reactive({input$column_display})
   get_custom_columns <- reactive({sanitize(input$custom_columns, "custom_columns")})
@@ -163,6 +164,7 @@ shinyServer(function(input, output) {
         list(numbering = get_numbering(),
              numbering_interval = get_numbering_interval(),
              axis_label_resize = get_axis_label_resize(),
+             box_resize = get_box_resize(),
              columns_to_show = get_columns_to_show(),
              ylim = get_ylim(),
              height = get_height(),
@@ -190,7 +192,8 @@ shinyServer(function(input, output) {
       make_visual(get_data(), event_locations, concurrent_events, 
                   numbering = get_plotting_parameters()$numbering,
                   numbering_interval = get_plotting_parameters()$numbering_interval,
-                  axis_label_resize = get_plotting_parameters()$axis_label_resize)})})
+                  axis_label_resize = get_plotting_parameters()$axis_label_resize,
+                  box_resize = get_plotting_parameters()$box_resize)})})
     
     # details
     counter = 1
@@ -308,7 +311,8 @@ shinyServer(function(input, output) {
       make_visual(get_data(), event_locations, concurrent_events, 
                   numbering = get_plotting_parameters()$numbering, 
                   numbering_interval = get_plotting_parameters()$numbering_interval,
-                  axis_label_resize = get_plotting_parameters()$axis_label_resize)
+                  axis_label_resize = get_plotting_parameters()$axis_label_resize,
+                  box_resize = get_plotting_parameters()$box_resize)
       dev.off()
       
       filename = paste(input$outfile, "_columns.pdf", sep = "")

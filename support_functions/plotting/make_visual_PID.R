@@ -1,4 +1,4 @@
-make_visual_PID <- function(event_locations, event_draw = c(-3,-1,1,3), ramp_draw = c(-3,-2,2,3), event_colors = NULL, lwd = 1.2) {
+make_visual_PID <- function(event_locations, event_draw = c(-3,-1,1,3), ramp_draw = c(-3,-2,2,3), event_colors = NULL, lwd = 1.2, box_resize = 1) {
   
   source("support_functions/plotting/make_boxes.R")
   clear_color = "#FFFFFF00"
@@ -18,7 +18,7 @@ make_visual_PID <- function(event_locations, event_draw = c(-3,-1,1,3), ramp_dra
       
       ifelse(n_event > 0, event_color <- event_colors[[1]], event_color <- event_colors[[2]])
       
-      make_boxes(data_mat = circle_colors, lwd = lwd, fg = event_color, circle_size_override = circle_size_override, color_scale = clear_color)
+      make_boxes(data_mat = circle_colors, lwd = lwd, fg = event_color, circle_size_override = circle_size_override, color_scale = clear_color, box_resize = box_resize)
       par(new = T)
     }
   }

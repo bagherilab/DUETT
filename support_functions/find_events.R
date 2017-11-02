@@ -1,4 +1,4 @@
-find_events <- function(P_values, I_values, D_values, linear_values, data_mat, window_size = 10, cutoffs = list(P=0.6, I=1, D=1.333, p_value=0.001, b_min=0.1, dwp=0.001), I_length = 8, ramp_length = 10, grow_window = T) {
+find_events <- function(P_values, I_values, D_values, linear_values, data_mat, window_size = 10, cutoffs = list(P=0.6, I=1, D=1.333, p_value=0.001, linear_coeff=0.1, dwp=0.001), I_length = 8, ramp_length = 10, grow_window = T) {
   
   library(lmtest)
   
@@ -28,7 +28,7 @@ find_events <- function(P_values, I_values, D_values, linear_values, data_mat, w
   dwp = linear_values$dwp
   for (n_col in 1:num_col) {
     # upramp
-    upramp_indices = which(p_values[,n_col] <= cutoffs$p_value & betas[,n_col] >= cutoffs$b_min & dwp[,n_col] >= cutoffs$dwp)
+    upramp_indices = which(p_values[,n_col] <= cutoffs$p_value & betas[,n_col] >= cutoffs$linear_coeff & dwp[,n_col] >= cutoffs$dwp)
     
     # check that event 1 exists and flag for event 3.  Otherwise mark as event 2
     upramp_upswing_indices = upramp_indices[event_locations[upramp_indices, n_col] == 1]
@@ -41,7 +41,7 @@ find_events <- function(P_values, I_values, D_values, linear_values, data_mat, w
     event_locations[upramp_downswing_indices, n_col] = 1.5
     
     # downramp
-    downramp_indices = which(p_values[,n_col] <= cutoffs$p_value & betas[,n_col] <= -cutoffs$b_min & dwp[,n_col] >= cutoffs$dwp)
+    downramp_indices = which(p_values[,n_col] <= cutoffs$p_value & betas[,n_col] <= -cutoffs$linear_coeff & dwp[,n_col] >= cutoffs$dwp)
     
     # check that event 1 exists and flag for event 3.  Otherwise mark as event 2
     downramp_downswing_indices = downramp_indices[event_locations[downramp_indices, n_col] == -1]

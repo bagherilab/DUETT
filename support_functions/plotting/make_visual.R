@@ -1,9 +1,10 @@
-make_visual <- function(data_mat, event_locations, concurrent_events, color_scale = NULL, numbering = T, numbering_interval = 5, axis_label_resize = 1, lwd = 0.01, fg = "black", circle_size_override = NULL) {
+make_visual <- function(data_mat, event_locations, concurrent_events, color_scale = NULL, numbering = T, numbering_interval = 5, axis_label_resize = 1, lwd = 0.01, fg = "black", circle_size_override = NULL, box_resize = 1) {
   
   source("support_functions/utility_functions.R")
   source("support_functions/color_to_hex.R")
   source("support_functions/plotting/make_boxes.R")
   source("support_functions/plotting/axis_labels.R")
+  source("support_functions/plotting/make_visual_PID.R")
   source("support_functions/plotting/make_visual_concurrent.R")
   
   # set colors
@@ -14,7 +15,7 @@ make_visual <- function(data_mat, event_locations, concurrent_events, color_scal
   grey_color = colorRampPalette(brewer.pal(n = 7, name ="Greys"))(100)
   
   # make grey boxes for the data
-  make_boxes(data_mat = data_mat, color_scale = grey_color, lwd = lwd, fg = clear_color)
+  make_boxes(data_mat = data_mat, color_scale = grey_color, lwd = lwd, fg = clear_color, box_resize = box_resize)
   if (numbering) {axis_labels(n_row = nrow(data_mat), n_col = ncol(data_mat), numbering_interval = numbering_interval, axis_label_resize = axis_label_resize)}
   
   # want -1.5 to be upswing events, and 1.5 to be downswing events.  swap them temporarily
@@ -25,7 +26,7 @@ make_visual <- function(data_mat, event_locations, concurrent_events, color_scal
   
   # add swing and ramp events
   par(new = T)
-  make_visual_PID(event_locations, event_draw = c(-1,1, -1.5,1.5, -3,3), ramp_draw = c(-1,1), event_colors = event_colors)
+  make_visual_PID(event_locations, event_draw = c(-1,1, -1.5,1.5, -3,3), ramp_draw = c(-1,1), event_colors = event_colors, box_resize = box_resize)
   par(new = T)
   
   # swap back
