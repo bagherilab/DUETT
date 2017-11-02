@@ -39,14 +39,14 @@ shinyServer(function(input, output) {
   # linear ramp paramers
   get_ramp_length <- reactive({sanitize(input$ramp_length, "ramp_length")})
   get_p_value <- reactive({sanitize(input$p_value, "p_value")})
-  get_b_min <- reactive({sanitize(input$b_min, "b_min")})
+  get_linear_coeff <- reactive({sanitize(input$linear_coeff, "linear_coeff")})
   get_dwp <- reactive({sanitize(input$dwp, "dwp")})
   
   get_concurrent_distance <- reactive({sanitize(input$concurrent_distance, "concurrent_distance")})
   get_conc_event_types <- reactive({
     event_types = c()
-    if (input$conc_swings) {event_types = c(-1, event_types, 1)}
-    if (input$conc_ramps) {event_types = c(-2, event_types, 2)}
+    if (input$concurrent_swings) {event_types = c(-1, event_types, 1)}
+    if (input$concurrent_ramps) {event_types = c(-2, event_types, 2)}
     event_types
   })
   
@@ -134,7 +134,7 @@ shinyServer(function(input, output) {
         P_values = calc_P_values()
         linear_values = calc_linear_values()
         
-        event_storage = do.call(ShapeSeq_events, list(P_values, I_values, D_values, linear_values, get_data(), get_window_size(), get_I_length(), get_ramp_length(), get_noise_length(), get_event_gap(), cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), b_min = get_b_min(), dwp = get_dwp())))
+        event_storage = do.call(ShapeSeq_events, list(P_values, I_values, D_values, linear_values, get_data(), get_window_size(), get_I_length(), get_ramp_length(), get_noise_length(), get_event_gap(), cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), linear_coeff = get_linear_coeff(), dwp = get_dwp())))
         
         concurrent_events = find_concurrent_events(event_storage[[1]], concurrent_distance = get_concurrent_distance(), comparison_point = "start", event_types = get_conc_event_types())
         return_list = c(event_storage, list(concurrent_events))
@@ -208,7 +208,7 @@ shinyServer(function(input, output) {
           make_col_detail_plots(
             my_col_group, 
             get_data(), event_locations, event_details, concurrent_events,
-            cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), b_min = get_b_min(), dwp = get_dwp()), 
+            cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), linear_coeff = get_linear_coeff(), dwp = get_dwp()), 
             event_colors = c("red", "blue"),
             ylim = get_plotting_parameters()$ylim)
         })
@@ -244,7 +244,10 @@ shinyServer(function(input, output) {
     concurrent_events = return_list[[3]]
     
     write.table(event_locations, file = paste(input$outfile, ".csv", sep = ""), sep = ",", quote = F, row.names = F)
-    
+   
+    browser() 
+    list(window_size = get_window_size(), I_length = get_I_length(), ramp_length = get_ramp_length(), noise_length = get_noise_length(), event_gap = get_event_gap(), P = get_P(), I = get_I(), D = get_D(), ramp_p_value = get_p_value(), linear_coeff = get_linear_coeff(), dwp = get_dwp(), concurrent_distance = get_concurrent_distance(), concurrent_event_types = get_conc_event_types())
+                                                                                                
     if (nrow(concurrent_events) >= 1) {
       event_type1 = sapply(1:nrow(concurrent_events), function(i) event_locations[[concurrent_events[i,1], concurrent_events[i,2]]])
       event_type2 = sapply(1:nrow(concurrent_events), function(i) event_locations[[concurrent_events[i,3], concurrent_events[i,4]]])
@@ -268,6 +271,18 @@ shinyServer(function(input, output) {
     write.table(event_details$p_values, file = paste(input$outfile, "_p_values.csv", sep = ""), sep = ",", quote = F)
     write.table(event_details$betas, file = paste(input$outfile, "_betas.csv", sep = ""), sep = ",", quote = F)
     write.table(event_details$dwp, file = paste(input$outfile, "_dwp.csv", sep = ""), sep = ",", quote = F)
+  })
+  
+  #################### UI settings ####################
+  # make table of UI settings
+  output_UI_settings <- observe({
+    if (input$table_UI_settings == 0) return()
+    
+    settings_names = names(input)
+    temp = sapply(settings_names, function(i) input[[i]])
+    temp[c("graph_output", "table_details_output", "table_output", "update", "table_UI_settings")] = NULL
+    temp = matrix(temp, ncol = 1, dimnames = list(names(temp), NULL))
+    write.table(temp, file = paste(input$outfile, "_UI_settings.csv", sep = ""), sep = ",", quote = F)
   })
   
   #################### output figure ####################
@@ -311,7 +326,7 @@ shinyServer(function(input, output) {
         make_col_detail_plots(
           my_col_group, 
           get_data(), event_locations, event_details, concurrent_events,
-          cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), b_min = get_b_min(), dwp = get_dwp()), 
+          cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), linear_coeff = get_linear_coeff(), dwp = get_dwp()), 
           event_colors = c("red", "blue"),
           ylim = get_plotting_parameters()$ylim)
       }

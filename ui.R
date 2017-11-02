@@ -18,6 +18,7 @@ shinyUI(
                fileInput("data_file", "Input data file"),
                textInput("outfile", "Output file name", value = "example_output", placeholder = "example_output"),
                actionButton("table_output", label = "Print event file"),
+               actionButton("table_UI_settings", label = "Print UI settings"),
                actionButton("table_details_output", label = "Print details files"),
                br(),
                br(),
@@ -67,14 +68,14 @@ shinyUI(
                titlePanel("Linear ramp parameters"),
                numericInput("ramp_length", label = "Ramp length", value = 40, min = 0, step = 1),
                numericInput("p_value", label = "Ramp p-value", value = 0.0001, min = 0, max = 1, step = 0.0001),
-               numericInput("b_min", label = "Linear coefficient", value = 0.1, min = 0, step = 0.01),
+               numericInput("linear_coeff", label = "Linear coefficient", value = 0.1, min = 0, step = 0.01),
                numericInput("dwp", label = "Durbin-Watson p-value", value = 0.001, min = 0, max = 1, step = 0.01),
                
                br(),
                numericInput("concurrent_distance", label = "Concurrency distance", value = 2, min = -1, step = 1),
                tags$head(tags$style(HTML('#update{background-color:lightgreen}'))),
-               checkboxInput('conc_ramps', 'Ramp events?', FALSE),
-               checkboxInput('conc_swings', 'Swing events?', TRUE),
+               checkboxInput('concurrent_ramps', 'Ramp events?', FALSE),
+               checkboxInput('concurrent_swings', 'Swing events?', TRUE),
                br(),
                actionButton("update", "Update plot")
              )
@@ -88,4 +89,4 @@ shinyUI(
     )
   )
 )
-# ))
+
