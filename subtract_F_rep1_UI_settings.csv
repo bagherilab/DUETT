@@ -6,13 +6,13 @@ concurrent_distance,2
 concurrent_ramps,FALSE
 concurrent_swings,TRUE
 custom_columns,1,11,16,26,57
-D,0.8
-data_file,list(name = "F_subtract_1.txt", size = 126328, type = "text/plain", datapath = "/tmp/RtmpYf74tc/6100d59026a664ce865de602/0.txt")
+D,0.6
+data_file,list(name = "F_subtract_1.txt", size = 126328, type = "text/plain", datapath = "C:\\Users\\Xuebert\\AppData\\Local\\Temp\\RtmpWiXLbE/d99565e9ebfb2d1e7338671e/0.txt")
 diverging,TRUE
 dwp,0.1
 event_gap,0
 height,14
-I,0.6
+I,0.3
 linear_coeff,0.15
 log_colors,TRUE
 noise_length,3
