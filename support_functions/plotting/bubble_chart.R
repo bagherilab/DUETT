@@ -19,7 +19,7 @@ bubble_chart <- function(circle_colors, circle_sizes, color_scale = NULL, xlab =
   }
   
   # attempt to make max circle size aesthetic
-  circle_sizes = (circle_sizes / max(abs(circle_sizes), na.rm = T)) * 25 * box_resize
+  circle_sizes = (circle_sizes / max(abs(circle_sizes), na.rm = T)) * 20 * box_resize
   
   if (is.null(color_scale)) {
     library(RColorBrewer)

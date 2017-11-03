@@ -20,7 +20,10 @@ make_visual <- function(data_mat, event_locations, concurrent_events, log_colors
   clear_color = color_to_hex("white", 1)
   library(RColorBrewer)
   if (diverging) {
-    base_color = rev(colorRampPalette(brewer.pal(n=7,name="PRGn"))(100))
+    library(grDevices)
+    base_color = colorRamp(c("lightslateblue", "white", "lightcoral")) ((1:100)/100)
+    # convert to hexcode
+    base_color = apply(base_color, 1, function(i) do.call(rgb, as.list(i / 255)))
   } else {
     base_color = colorRampPalette(brewer.pal(n = 7, name ="Greys"))(100)
   }
@@ -37,7 +40,7 @@ make_visual <- function(data_mat, event_locations, concurrent_events, log_colors
   
   # add swing and ramp events
   par(new = T)
-  make_visual_PID(event_locations, event_draw = c(-1,1, -1.5,1.5, -3,3), ramp_draw = c(-1,1), event_colors = event_colors, box_resize = box_resize)
+  make_visual_PID(event_locations, event_draw = c(-1,1, -1.5,1.5, -3,3), ramp_draw = c(-1,1), event_colors = event_colors, box_resize = box_resize, lwd = 2)
   par(new = T)
   
   # swap back
@@ -46,6 +49,6 @@ make_visual <- function(data_mat, event_locations, concurrent_events, log_colors
   
   # add concurent events
   num_rows = nrow(event_locations)
-  make_visual_concurrent(concurrent_events, num_rows)
+  make_visual_concurrent(concurrent_events, num_rows, lwd = 3)
   par(new = F)
 }
