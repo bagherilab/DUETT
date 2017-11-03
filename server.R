@@ -248,37 +248,41 @@ shinyServer(function(input, output) {
   output_table <- observe({
     if (input$table_output == 0) return()
     
-    return_list = get_events()
-    event_locations = return_list[[1]]
-    concurrent_events = return_list[[3]]
-    
-    write.table(event_locations, file = paste(input$outfile, ".csv", sep = ""), sep = ",", quote = F, row.names = F)
-   
-    list(window_size = get_window_size(), I_length = get_I_length(), ramp_length = get_ramp_length(), noise_length = get_noise_length(), event_gap = get_event_gap(), P = get_P(), I = get_I(), D = get_D(), ramp_p_value = get_p_value(), linear_coeff = get_linear_coeff(), dwp = get_dwp(), concurrent_distance = get_concurrent_distance(), concurrent_event_types = get_conc_event_types())
-                                                                                                
-    if (nrow(concurrent_events) >= 1) {
-      event_type1 = sapply(1:nrow(concurrent_events), function(i) event_locations[[concurrent_events[i,1], concurrent_events[i,2]]])
-      event_type2 = sapply(1:nrow(concurrent_events), function(i) event_locations[[concurrent_events[i,3], concurrent_events[i,4]]])
-    } else {
-      event_type1 = c()
-      event_type2 = c()
-    }
-    concurrent_events_table = cbind(concurrent_events, event_type1, event_type2)
-    write.table(concurrent_events_table, file = paste(input$outfile, "_concurrent_events.csv", sep = ""), sep = ",", quote = F, row.names = F)
+    isolate({
+      return_list = get_events()
+      event_locations = return_list[[1]]
+      concurrent_events = return_list[[3]]
+      
+      write.table(event_locations, file = paste(input$outfile, ".csv", sep = ""), sep = ",", quote = F, row.names = F)
+      
+      list(window_size = get_window_size(), I_length = get_I_length(), ramp_length = get_ramp_length(), noise_length = get_noise_length(), event_gap = get_event_gap(), P = get_P(), I = get_I(), D = get_D(), ramp_p_value = get_p_value(), linear_coeff = get_linear_coeff(), dwp = get_dwp(), concurrent_distance = get_concurrent_distance(), concurrent_event_types = get_conc_event_types())
+      
+      if (nrow(concurrent_events) >= 1) {
+        event_type1 = sapply(1:nrow(concurrent_events), function(i) event_locations[[concurrent_events[i,1], concurrent_events[i,2]]])
+        event_type2 = sapply(1:nrow(concurrent_events), function(i) event_locations[[concurrent_events[i,3], concurrent_events[i,4]]])
+      } else {
+        event_type1 = c()
+        event_type2 = c()
+      }
+      concurrent_events_table = cbind(concurrent_events, event_type1, event_type2)
+      write.table(concurrent_events_table, file = paste(input$outfile, "_concurrent_events.csv", sep = ""), sep = ",", quote = F, row.names = F)
+    })
   })
   
   output_table_details <- observe({
     
     if (input$table_details_output == 0) return()
     
-    event_details = get_events()[[2]]
-    
-    write.table(event_details$P_values, file = paste(input$outfile, "_P.csv", sep = ""), sep = ",", quote = F)
-    write.table(event_details$I_values, file = paste(input$outfile, "_I.csv", sep = ""), sep = ",", quote = F)
-    write.table(event_details$D_values, file = paste(input$outfile, "_D.csv", sep = ""), sep = ",", quote = F)
-    write.table(event_details$p_values, file = paste(input$outfile, "_p_values.csv", sep = ""), sep = ",", quote = F)
-    write.table(event_details$betas, file = paste(input$outfile, "_betas.csv", sep = ""), sep = ",", quote = F)
-    write.table(event_details$dwp, file = paste(input$outfile, "_dwp.csv", sep = ""), sep = ",", quote = F)
+    isolate({
+      event_details = get_events()[[2]]
+      
+      write.table(event_details$P_values, file = paste(input$outfile, "_P.csv", sep = ""), sep = ",", quote = F)
+      write.table(event_details$I_values, file = paste(input$outfile, "_I.csv", sep = ""), sep = ",", quote = F)
+      write.table(event_details$D_values, file = paste(input$outfile, "_D.csv", sep = ""), sep = ",", quote = F)
+      write.table(event_details$p_values, file = paste(input$outfile, "_p_values.csv", sep = ""), sep = ",", quote = F)
+      write.table(event_details$betas, file = paste(input$outfile, "_betas.csv", sep = ""), sep = ",", quote = F)
+      write.table(event_details$dwp, file = paste(input$outfile, "_dwp.csv", sep = ""), sep = ",", quote = F)
+    })
   })
   
   #################### UI settings ####################
@@ -286,11 +290,13 @@ shinyServer(function(input, output) {
   output_UI_settings <- observe({
     if (input$table_UI_settings == 0) return()
     
-    settings_names = names(input)
-    temp = sapply(settings_names, function(i) input[[i]])
-    temp[c("graph_output", "table_details_output", "table_output", "update", "table_UI_settings")] = NULL
-    temp = matrix(temp, ncol = 1, dimnames = list(names(temp), NULL))
-    write.table(temp, file = paste(input$outfile, "_UI_settings.csv", sep = ""), sep = ",", quote = F)
+    isolate({
+      settings_names = names(input)
+      temp = sapply(settings_names, function(i) input[[i]])
+      temp[c("graph_output", "table_details_output", "table_output", "update", "table_UI_settings")] = NULL
+      temp = matrix(temp, ncol = 1, dimnames = list(names(temp), NULL))
+      write.table(temp, file = paste(input$outfile, "_UI_settings.csv", sep = ""), sep = ",", quote = F)
+    })
   })
   
   #################### output figure ####################
