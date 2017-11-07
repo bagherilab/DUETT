@@ -137,9 +137,8 @@ shinyServer(function(input, output) {
         P_values = calc_P_values()
         linear_values = calc_linear_values()
         
-        event_storage = do.call(ShapeSeq_events, list(P_values, I_values, D_values, linear_values, get_data(), get_window_size(), get_I_length(), get_ramp_length(), get_noise_length(), get_event_gap(), cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), linear_coeff = get_linear_coeff(), dwp = get_dwp()), diverging = get_diverging()))
+        event_storage = do.call(ShapeSeq_events, list(P_values, I_values, D_values, linear_values, get_data(), get_window_size(), get_I_length(), get_ramp_length(), get_noise_length(), get_event_gap(), cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), linear_coeff = get_linear_coeff(), dwp = get_dwp())))
         
-        # browser()
         concurrent_events = find_concurrent_events(event_storage[[1]], concurrent_distance = get_concurrent_distance(), comparison_point = "start", event_types = get_conc_event_types())
         return_list = c(event_storage, list(concurrent_events))
       })

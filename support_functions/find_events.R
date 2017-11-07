@@ -1,4 +1,4 @@
-find_events <- function(P_values, I_values, D_values, linear_values, data_mat, window_size = 10, cutoffs = list(P=0.6, I=1, D=1.333, p_value=0.001, linear_coeff=0.1, dwp=0.001), I_length = 8, ramp_length = 10, grow_window = T, diverging = F) {
+find_events <- function(P_values, I_values, D_values, linear_values, data_mat, window_size = 10, cutoffs = list(P=0.6, I=1, D=1.333, p_value=0.001, linear_coeff=0.1, dwp=0.001), I_length = 8, ramp_length = 10, grow_window = T) {
   
   library(lmtest)
   
@@ -14,13 +14,6 @@ find_events <- function(P_values, I_values, D_values, linear_values, data_mat, w
   D_events = D_values * 0
   D_events[D_values >= cutoffs$D] = 1
   D_events[D_values <= -cutoffs$D] = -1
-  
-  # also include diverging
-  if (diverging) {
-    # browser()
-    # P_events[P_values >= cutoffs$P] = 1
-    # P_events[P_values <= -(1-(1 / (1+cutoffs$P)))] = -1
-  }
   
   # process to find events
   event_locations = data_mat * 0
@@ -58,7 +51,6 @@ find_events <- function(P_values, I_values, D_values, linear_values, data_mat, w
     # check that event +1 exists (rare) and flag for event -1.5
     downramp_upswing_indices = downramp_indices[downramp_indices %in% which(event_locations[, n_col] == 1)]
     
-    # if (n_col == 54) {browser()}
     event_locations[downramp_indices, n_col] = -2
     event_locations[downramp_downswing_indices, n_col] = -3
     event_locations[downramp_upswing_indices, n_col] = -1.5

@@ -28,7 +28,6 @@ load_data <- function(filename) {
   #   }
   # }
   # raw_data = apply(raw_data, 1, function(i) i / mean(i, na.rm = T))
-  # browser()
   return(raw_data)
   
 }

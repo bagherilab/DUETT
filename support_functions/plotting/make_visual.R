@@ -32,20 +32,10 @@ make_visual <- function(data_mat, event_locations, concurrent_events, log_colors
   make_boxes(data_mat = data_mat, color_scale = base_color, lwd = lwd, fg = clear_color, box_resize = box_resize, diverging = diverging)
   if (numbering) {axis_labels(n_row = nrow(data_mat), n_col = ncol(data_mat), numbering_interval = numbering_interval, axis_label_resize = axis_label_resize)}
   
-  # want -1.5 to be upswing events, and 1.5 to be downswing events.  swap them temporarily
-  event_1.5 = event_locations == 1.5
-  event_n1.5 = event_locations == -1.5
-  event_locations[event_1.5] = -1.5
-  event_locations[event_n1.5] = 1.5
-  
   # add swing and ramp events
   par(new = T)
   make_visual_PID(event_locations, event_draw = c(-1,1, -1.5,1.5, -3,3), ramp_draw = c(-1,1), event_colors = event_colors, box_resize = box_resize, lwd = 2)
   par(new = T)
-  
-  # swap back
-  event_locations[event_1.5] = 1.5
-  event_locations[event_n1.5] = -1.5
   
   # add concurent events
   num_rows = nrow(event_locations)
