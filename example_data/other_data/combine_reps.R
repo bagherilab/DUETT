@@ -1,4 +1,6 @@
 
+rm(list=ls())
+
 setwd("~/Dropbox/Albert Xue/Research/Deployment/ShapeSeq_event_detector/example_data/other_data/")
 
 for (n_rep in 1:3) {
