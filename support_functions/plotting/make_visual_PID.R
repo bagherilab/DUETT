@@ -8,6 +8,7 @@ make_visual_PID <- function(event_locations, event_draw = c(-3,-1,1,3), ramp_dra
   plot(1, type = "n", xlim = c(0, ncol(event_locations)+1), ylim = c(0, nrow(event_locations)+1), xlab = "", ylab = "", xaxt = "n", yaxt = "n", bty = "n")
   
   par(new = T)
+  # coloring swing events
   for (n_event in event_draw) {
     circle_colors = event_locations * NA
     
@@ -23,6 +24,7 @@ make_visual_PID <- function(event_locations, event_draw = c(-3,-1,1,3), ramp_dra
     }
   }
   
+  # coloring ramps
   for (ramp_type in ramp_draw) {
     
     # find ramps as 2's, 1.5's, or 3's
@@ -46,7 +48,8 @@ make_visual_PID <- function(event_locations, event_draw = c(-3,-1,1,3), ramp_dra
       }
       
       for (n_ramp in ramp_list) {
-        ifelse(ramp_type %in% c(2,3,-1.5), event_color <- event_colors[[1]], event_color <- event_colors[[2]])
+        # if (n_ramp[,"col"] == 14) {browser()}
+        ifelse(ramp_type > 0, event_color <- event_colors[[1]], event_color <- event_colors[[2]])
         
         # detect if single row
         if (is.null(dim(n_ramp))) {
