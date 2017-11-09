@@ -63,8 +63,8 @@ shinyUI(
                numericInput("window_size", label = "Window size", value = 9, min = 1, step = 1),
                
                titlePanel(h4("Noise parameters")),
-               numericInput("event_gap", label = "Event gap", value = 1, min = 0, step = 1),
-               numericInput("noise_length", label = "Noise length", value = 2, min = 0, step = 1)
+               numericInput("noise_length", label = "Noise length", value = 2, min = 0, step = 1),
+               numericInput("event_gap", label = "Event gap", value = 1, min = 0, step = 1)
              )),
       
       column(3, 
