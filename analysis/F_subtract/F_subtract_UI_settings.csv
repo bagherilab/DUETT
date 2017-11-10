@@ -1,13 +1,13 @@
 V1
 axis_label_resize,1
 box_resize,1
-column_display,3
+column_display,2
 concurrent_distance,2
 concurrent_ramps,FALSE
 concurrent_swings,TRUE
 custom_columns,1,11,16,26,57
 D,0.6
-data_file,list(name = "F_subtract.txt", size = 155579, type = "text/plain", datapath = "/tmp/Rtmp8HzVRI/59379fe51e5d0c10c450444c/0.txt")
+data_file,list(name = "F_subtract.txt", size = 155579, type = "text/plain", datapath = "/tmp/Rtmp8HzVRI/4f4703079b5dca0093d58476/0.txt")
 diverging,TRUE
 dwp,0.1
 event_gap,0
