@@ -49,8 +49,8 @@ plot_data <- function(data_vector, event_locations, concurrent_events, n_col, ev
   if (n_col %in% concurrent_events[, c("col1", "col2")]) {
     
     source("support_functions/color_to_hex.R")
-    # line_color = color_to_hex("forestgreen", 0)
-    line_color = color_to_hex("orange", 0.4)
+    line_color = color_to_hex("forestgreen", 0)
+    # line_color = color_to_hex("orange", 0.4)
     
     relevant_rows = which(concurrent_events[, "col1"] == n_col | concurrent_events[, "col2"] == n_col)
     for (n_relevant in relevant_rows) {
