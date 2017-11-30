@@ -1,4 +1,4 @@
-make_visual <- function(data_mat, event_locations, concurrent_events, log_colors = F, color_scale = NULL, numbering = T, numbering_interval = 5, axis_label_resize = 1, lwd = 0.01, fg = "black", circle_size_override = NULL, box_resize = 1, diverging = F) {
+make_visual <- function(data_mat, event_locations, concurrent_events, log_colors = F, color_scale = NULL, numbering = T, numbering_offset = 0, numbering_interval = 5, axis_label_resize = 1, lwd = 0.01, fg = "black", circle_size_override = NULL, box_resize = 1, diverging = F) {
   
   source("support_functions/utility_functions.R")
   source("support_functions/color_to_hex.R")
@@ -30,7 +30,7 @@ make_visual <- function(data_mat, event_locations, concurrent_events, log_colors
   
   # make grey boxes for the data
   make_boxes(data_mat = data_mat, color_scale = base_color, lwd = lwd, fg = clear_color, box_resize = box_resize, diverging = diverging)
-  if (numbering) {axis_labels(n_row = nrow(data_mat), n_col = ncol(data_mat), numbering_interval = numbering_interval, axis_label_resize = axis_label_resize)}
+  if (numbering) {axis_labels(n_row = nrow(data_mat), n_col = ncol(data_mat), numbering_offset = numbering_offset, numbering_interval = numbering_interval, axis_label_resize = axis_label_resize)}
   
   # add swing and ramp events
   par(new = T)

@@ -23,6 +23,7 @@ sanitize <- function(value, function_call) {
   # check for other types of sanitizations
   sanitize_types = NULL
   switch(function_call,
+         numbering_offset = sanitize_types <- c("integer"),
          numbering_interval = sanitize_types <- c("integer"),
          axis_label_resize = sanitize_types <- c("positive"),
          box_resize = sanitize_types <- c("positive"),

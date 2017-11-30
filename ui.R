@@ -41,12 +41,13 @@ shinyUI(
                conditionalPanel(
                  condition = "input.numbering == true",
                  numericInput("numbering_interval", label = "Numbering interval", value = 5, min = 1, step = 1),
+                 numericInput("numbering_offset", label = "Numbering offset", value = 0, step = 1),
                  numericInput("axis_label_resize", label = "Resize axis labels", value = 1, min = 0, step = 0.1),
                  numericInput("box_resize", label = "Resize boxes", value = 1, min = 0, step = 0.05)
                ),
                titlePanel(h4("Column detail plotting")),
                textInput("ylim", label = "y axis range", value = "0,20", placeholder = "0,20"),
-               selectInput("column_display", label = "Columns to display?", choices = list("Custom columns" = 1, "All columns" = 2, "Columns with events" = 3), selected = 3),
+               selectInput("column_display", label = "Columns to display?", choices = list("Custom columns" = 1, "All columns" = 2, "Columns with events" = 3), selected = 2),
                conditionalPanel(
                  condition = "input.column_display == 1",
                  textInput("custom_columns", label = "Columns to display", value = "1,11,16,26,57", placeholder = "1,11,14,37"))

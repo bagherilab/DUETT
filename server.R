@@ -23,6 +23,7 @@ shinyServer(function(input, output) {
   # plotting parameters
   get_log_colors <- reactive({input$log_colors})
   get_numbering <- reactive({input$numbering})
+  get_numbering_offset <- reactive({sanitize(input$numbering_offset, "numbering_offset")})
   get_numbering_interval <- reactive({sanitize(input$numbering_interval, "numbering_interval")})
   get_axis_label_resize <- reactive({sanitize(input$axis_label_resize, "axis_label_resize")})
   get_box_resize <- reactive({sanitize(input$box_resize, "box_resize")})
@@ -165,6 +166,7 @@ shinyServer(function(input, output) {
       isolate({
         list(log_colors = get_log_colors(),
              numbering = get_numbering(),
+             numbering_offset = get_numbering_offset(),
              numbering_interval = get_numbering_interval(),
              axis_label_resize = get_axis_label_resize(),
              box_resize = get_box_resize(),
@@ -195,6 +197,7 @@ shinyServer(function(input, output) {
     local({output[["plot1"]] <- renderPlot({
       make_visual(get_data(), event_locations, concurrent_events, get_plotting_parameters()$log_colors,
                   numbering = get_plotting_parameters()$numbering,
+                  numbering_offset = get_plotting_parameters()$numbering_offset,
                   numbering_interval = get_plotting_parameters()$numbering_interval,
                   axis_label_resize = get_plotting_parameters()$axis_label_resize,
                   box_resize = get_plotting_parameters()$box_resize,
@@ -320,6 +323,7 @@ shinyServer(function(input, output) {
       pdf(filename, width = width, height = height)
       make_visual(get_data(), event_locations, concurrent_events, get_plotting_parameters()$log_colors,
                   numbering = get_plotting_parameters()$numbering, 
+                  numbering_offset = get_plotting_parameters()$numbering_offset,
                   numbering_interval = get_plotting_parameters()$numbering_interval,
                   axis_label_resize = get_plotting_parameters()$axis_label_resize,
                   box_resize = get_plotting_parameters()$box_resize,
