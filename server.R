@@ -34,8 +34,13 @@ shinyServer(function(input, output) {
   # PID parameters
   get_P <- reactive({sanitize(input$P, "P")})
   get_I <- reactive({sanitize(input$I, "I")})
+  get_I_length <- reactive({
+    I_length = sanitize(input$I_length, "I_length")
+    if (I_length == "default") {I_length = get_window_size()}
+    I_length
+  })
   get_D <- reactive({sanitize(input$D, "D")})
-  get_I_length <- reactive({sanitize(input$window_size, "window_size")}) # not actually an input
+  # get_I_length <- reactive({sanitize(input$window_size, "window_size")}) # not actually an input
   get_window_size <- reactive({sanitize(input$window_size, "window_size")})
   get_event_gap <- reactive({sanitize(input$event_gap, "event_gap")})
   get_noise_length <- reactive({sanitize(input$noise_length, "noise_length")})

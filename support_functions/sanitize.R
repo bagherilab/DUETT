@@ -13,6 +13,22 @@ sanitize <- function(value, function_call) {
       warning("Custom columns should be integers separated by commas (no spaces)")
     }
     return(value)
+  } else if (function_call == "I_length") {
+    options(warn = -1) # temporarily turn off warnings
+    is_number = !is.na(as.numeric(value)) # check for number in string
+    options(warn = 0) # turn warnings back on
+    
+    if (is_number) {
+      if (!(as.numeric(value) %% 1 == 0)){
+        warning("If I window length is specified as a number, it must be an integer.  Setting to default")
+        value = "default"
+      } else {
+        value = as.numeric(value)
+      }
+    } else {
+      value = "default"
+    }
+    return(value)
   }
   
   # check that it is a number and is length 1

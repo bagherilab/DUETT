@@ -60,6 +60,7 @@ shinyUI(
                
                numericInput("P", label = "Proportional (P)", value = 0.25, min = 0, step = 0.1),
                numericInput("I", label = "Integral (I)", value = 0.8, min = 0, step = 0.1),
+               textInput("I_length", label = "I length (default=window size)", value = "default"),
                numericInput("D", label = "Differential (D)", value = 0.8, min = 0, step = 0.1),
                numericInput("window_size", label = "Window size", value = 9, min = 1, step = 1),
                
