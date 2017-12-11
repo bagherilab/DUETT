@@ -1,7 +1,7 @@
 
 rm(list=ls())
 
-setwd("~/Dropbox/Albert Xue/Research/Deployment/ShapeSeq_event_detector/example_data/other_data/")
+setwd("C:/Users/Xuebert//Dropbox/Albert Xue/Research/Deployment/ShapeSeq_event_detector/example_data/other_data/")
 
 combine_reps <- function(filename1, filename2, new_filename) {
   
