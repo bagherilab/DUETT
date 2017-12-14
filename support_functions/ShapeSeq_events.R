@@ -6,7 +6,7 @@ if(length(new.packages)) install.packages(new.packages)
 
 #######
 
-ShapeSeq_events <- function(P_values, I_values, D_values, linear_values, data_mat, window_size = 9, I_length = 9, ramp_length = 40, noise_length = 2, event_gap = 1, cutoffs = list(P = 1/4, I = 0.8, D = 0.8, p_value = 0.0001, linear_coeff = 0.15, dwp = 0.01), numbering = T, numbering_interval = 5) {
+ShapeSeq_events <- function(P_values, I_values, D_values, linear_values, data_mat, window_size = 9, I_length = 9, ramp_length = 40, noise_length = 2, event_gap = 1, cutoffs = list(P = 1/4, I = 0.8, D = 0.8, p_value = 0.0001, linear_coeff = 0.15, dws = 0.01), numbering = T, numbering_interval = 5) {
   
   source("support_functions/plotting/make_visual.R")
   source("support_functions/plotting/make_visual_PID.R")

@@ -52,7 +52,7 @@ sanitize <- function(value, function_call) {
          ramp_length = sanitize_types <- c("positive", "integer"),
          p_value = sanitize_types <- c("positive", "between 0 and 1"),
          linear_coeff = sanitize_types <- c("positive"),
-         dwp = sanitize_types <- c("positive", "between 0 and 1"),
+         dws = sanitize_types <- c("positive"),#, "between 0 and 1"),
          concurrent_distance = sanitize_types <- c("positive")
   )
   
@@ -71,19 +71,20 @@ sanitize <- function(value, function_call) {
   
   if ("positive" %in% sanitize_types) {
     if (value < 0) {
-      browser()
+      # browser()
       warn_flag = T
     }
   }
   
   if ("between 0 and 1" %in% sanitize_types) {
-    if (value < 0 | value > 1) {
+    if ((value < 0) | (value > 1)) {
       warn_flag = T
     }
   }
   
   if (warn_flag) {
-    warning(paste(function_all, "is supposed to be", paste(A, sep = " and ")))
+    print(paste(function_call, "is supposed to be", paste(sanitize_types, sep = " and ")))
+    # warning(paste(function_call, "is supposed to be", paste(sanitize_types, sep = " and ")))
   }
   
   return(value)

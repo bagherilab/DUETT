@@ -49,7 +49,7 @@ shinyServer(function(input, output) {
   get_ramp_length <- reactive({sanitize(input$ramp_length, "ramp_length")})
   get_p_value <- reactive({sanitize(input$p_value, "p_value")})
   get_linear_coeff <- reactive({sanitize(input$linear_coeff, "linear_coeff")})
-  get_dwp <- reactive({sanitize(input$dwp, "dwp")})
+  get_dws <- reactive({sanitize(input$dws, "dws")})
   
   get_concurrent_distance <- reactive({sanitize(input$concurrent_distance, "concurrent_distance")})
   get_conc_event_types <- reactive({
@@ -99,13 +99,13 @@ shinyServer(function(input, output) {
     data_mat = get_data()
     p_values = data_mat * NA
     betas = p_values
-    dwp = p_values
+    dws = p_values
     
     if (ramp_length > nrow(data_mat)) { # error
       warning("Ramp window is higher than number of rows!")
-      return(list(p_values = p_values, betas = betas, dwp = dwp))
+      return(list(p_values = p_values, betas = betas, dws = dws))
     } else if (ramp_length <= 1) {
-      return(list(p_values = p_values, betas = betas, dwp = dwp))
+      return(list(p_values = p_values, betas = betas, dws = dws))
     }
     
     for (n_col in 1:ncol(p_values)) {
@@ -121,14 +121,15 @@ shinyServer(function(input, output) {
           
           # check that y is not all the same (dwtest doesn't like that)
           if (length(unique(y)) == 1) {
-            dwp[[n_window + ramp_length - 1, n_col]] = 1
+            dws[[n_window + ramp_length - 1, n_col]] = Inf
           } else {
-            dwp[[n_window + ramp_length - 1, n_col]] = dwtest(y ~ x)$p.value
+            # dws[[n_window + ramp_length - 1, n_col]] = dwtest(y ~ x)$p.value
+            dws[[n_window + ramp_length - 1, n_col]] = dwtest(y ~ x)$statistic
           }
         }
       }
     }
-    list(p_values = p_values, betas = betas, dwp = dwp)
+    list(p_values = p_values, betas = betas, dws = dws)
   })
   
   get_events <- reactive({
@@ -143,7 +144,7 @@ shinyServer(function(input, output) {
         P_values = calc_P_values()
         linear_values = calc_linear_values()
         
-        event_storage = do.call(ShapeSeq_events, list(P_values, I_values, D_values, linear_values, get_data(), get_window_size(), get_I_length(), get_ramp_length(), get_noise_length(), get_event_gap(), cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), linear_coeff = get_linear_coeff(), dwp = get_dwp())))
+        event_storage = do.call(ShapeSeq_events, list(P_values, I_values, D_values, linear_values, get_data(), get_window_size(), get_I_length(), get_ramp_length(), get_noise_length(), get_event_gap(), cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), linear_coeff = get_linear_coeff(), dws = get_dws())))
         
         concurrent_events = find_concurrent_events(event_storage[[1]], concurrent_distance = get_concurrent_distance(), comparison_point = "start", event_types = get_conc_event_types())
         return_list = c(event_storage, list(concurrent_events))
@@ -224,7 +225,7 @@ shinyServer(function(input, output) {
           make_col_detail_plots(
             my_col_group, 
             get_data(), event_locations, event_details, concurrent_events,
-            cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), linear_coeff = get_linear_coeff(), dwp = get_dwp()), 
+            cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), linear_coeff = get_linear_coeff(), dws = get_dws()), 
             event_colors = c("red", "blue"),
             ylim = get_plotting_parameters()$ylim)
         })
@@ -262,7 +263,7 @@ shinyServer(function(input, output) {
       
       write.table(event_locations, file = paste(input$outfile, ".csv", sep = ""), sep = ",", quote = F, row.names = F)
       
-      list(window_size = get_window_size(), I_length = get_I_length(), ramp_length = get_ramp_length(), noise_length = get_noise_length(), event_gap = get_event_gap(), P = get_P(), I = get_I(), D = get_D(), ramp_p_value = get_p_value(), linear_coeff = get_linear_coeff(), dwp = get_dwp(), concurrent_distance = get_concurrent_distance(), concurrent_event_types = get_conc_event_types())
+      list(window_size = get_window_size(), I_length = get_I_length(), ramp_length = get_ramp_length(), noise_length = get_noise_length(), event_gap = get_event_gap(), P = get_P(), I = get_I(), D = get_D(), ramp_p_value = get_p_value(), linear_coeff = get_linear_coeff(), dws = get_dws(), concurrent_distance = get_concurrent_distance(), concurrent_event_types = get_conc_event_types())
       
       if (nrow(concurrent_events) >= 1) {
         event_type1 = sapply(1:nrow(concurrent_events), function(i) event_locations[[concurrent_events[i,1], concurrent_events[i,2]]])
@@ -288,7 +289,7 @@ shinyServer(function(input, output) {
       write.table(event_details$D_values, file = paste(input$outfile, "_D.csv", sep = ""), sep = ",", quote = F)
       write.table(event_details$p_values, file = paste(input$outfile, "_p_values.csv", sep = ""), sep = ",", quote = F)
       write.table(event_details$betas, file = paste(input$outfile, "_betas.csv", sep = ""), sep = ",", quote = F)
-      write.table(event_details$dwp, file = paste(input$outfile, "_dwp.csv", sep = ""), sep = ",", quote = F)
+      write.table(event_details$dws, file = paste(input$outfile, "_dws.csv", sep = ""), sep = ",", quote = F)
     })
   })
   
@@ -350,7 +351,7 @@ shinyServer(function(input, output) {
         make_col_detail_plots(
           my_col_group, 
           get_data(), event_locations, event_details, concurrent_events,
-          cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), linear_coeff = get_linear_coeff(), dwp = get_dwp()), 
+          cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), linear_coeff = get_linear_coeff(), dws = get_dws()), 
           event_colors = c("red", "blue"),
           ylim = get_plotting_parameters()$ylim)
       }

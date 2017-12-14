@@ -74,8 +74,8 @@ shinyUI(
                titlePanel("Linear ramp parameters"),
                numericInput("ramp_length", label = "Ramp length", value = 40, min = 0, step = 1),
                numericInput("p_value", label = "Ramp p-value", value = 0.0001, min = 0, max = 1, step = 0.0001),
-               numericInput("linear_coeff", label = "Linear coefficient", value = 0.1, min = 0, step = 0.01),
-               numericInput("dwp", label = "Durbin-Watson p-value", value = 0.001, min = 0, max = 1, step = 0.01),
+               numericInput("linear_coeff", label = "Linear coefficient", value = 0.15, min = 0, step = 0.01),
+               numericInput("dws", label = "Durbin-Watson statistc", value = 1, min = 0, max = 4, step = 0.1),
                
                br(),
                numericInput("concurrent_distance", label = "Concurrency distance", value = 2, min = -1, step = 1),
