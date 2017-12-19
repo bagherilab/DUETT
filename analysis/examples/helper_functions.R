@@ -1,6 +1,5 @@
 make_values <- function(start_level = 1, end_level = 2, event_length = 2, buffer_length = 40, rnorm_sd = 0.3, min_value = 0, back_down = F, top_length = 1) {
   
-  # values = c(rep(start_level, buffer_length), rep(end_level, buffer_length))
   if (event_length == 0) {
     ramp = c()
   } else {
@@ -12,7 +11,6 @@ make_values <- function(start_level = 1, end_level = 2, event_length = 2, buffer
   } else {
     values = c(rep(start_level, buffer_length), ramp, rep(end_level, buffer_length))
   }
-  
   
   values = matrix(values, ncol = 1) + rnorm(length(values), sd = rnorm_sd)
   
@@ -43,20 +41,22 @@ calculate_PID <- function(values, window_size, I_length = window_size) {
   if (window_size == 0) {D_values = values * 0}
   D_values = diff_data(matrix(values, ncol = 1), window_size)
   
-  
   num_row = length(values)
   num_col = 1
   I_values = matrix(NA, nrow = num_row, ncol = num_col)
   for (n_col in 1:ncol(D_values)) {
     # I_values[(I_length+1):(num_row-I_length),n_col] = sapply((I_length+1):(num_row-I_length), function(i) sum(D_values[i:(i+I_length),n_col])) / I_length
-    I_values[(I_length+1):(num_row-I_length),n_col] = sapply((I_length+1):(num_row-I_length), function(i) sum(D_values[i:(i+I_length),n_col])) / I_length
+    # I_values[(I_length+1):(num_row-I_length),n_col] = sapply((I_length+1):(num_row-I_length), function(i) sum(D_values[i:(i+I_length),n_col])) / I_length
+    I_values[(I_length+1):num_row,n_col] = sapply(1:(num_row-I_length), function(i) sum(D_values[i:(i+I_length),n_col])) / I_length
   }
-  
   
   P_values = D_values / abs(values - D_values)
   
   return(list(P=P_values, I=I_values, D=D_values))
 }
+
+
+
 
 calculate_ramp <- function(values, ramp_length) {
   library(lmtest)
@@ -64,7 +64,7 @@ calculate_ramp <- function(values, ramp_length) {
   betas = p_values
   dws = p_values
   
-  for (n_window in 1:(nrow(p_values) - ramp_length - 1)) {
+  for (n_window in 1:max((nrow(p_values) - ramp_length - 1), 1)) {
     x = 1:ramp_length
     y = values[n_window:(n_window + ramp_length - 1)]
     
