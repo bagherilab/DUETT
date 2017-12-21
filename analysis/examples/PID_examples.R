@@ -76,8 +76,8 @@ PID_values[[1]] = make_pair_plot(window_size = window_size, start_level = 1, end
 
 PID_values[[2]] = make_pair_plot(window_size = window_size, start_level = 0.1, end_level = 0.1, event_length = event_length, ylim = ylim, y_shift = 0, rnorm_sd = 0.1)
 
-PID_values[[3]] = make_pair_plot(window_size = window_size, start_level = 17, end_level = 17, event_length = event_length, ylim = c(0,20), y_shift = 0.3, rnorm_sd = 0.7)
+PID_values[[3]] = make_pair_plot(window_size = window_size, start_level = 17, end_level = 17, event_length = event_length, ylim = ylim, y_shift = 0.3, rnorm_sd = 0.7)
 
-PID_values[[4]] = make_pair_plot(window_size = window_size, start_level = 2, end_level = 3, event_length = 0, ylim = ylim, y_shift = 0, back_down = T, top_length = 1)
+PID_values[[4]] = make_pair_plot(window_size = window_size, start_level = 2, end_level = 3, event_length = 0, buffer_plot = 12, ylim = ylim, y_shift = 0, back_down = T, top_length = 1)
 
 dev.off()
