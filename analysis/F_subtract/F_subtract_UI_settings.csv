@@ -7,9 +7,9 @@ concurrent_ramps,FALSE
 concurrent_swings,TRUE
 custom_columns,1,11,16,26,57
 D,0.6
-data_file,list(name = "F_subtract.txt", size = 155579, type = "text/plain", datapath = "/tmp/RtmpEi9DAx/cca97b9f30d30cc5d93e9279/0.txt")
+data_file,list(name = "F_subtract.txt", size = 155579, type = "text/plain", datapath = "/tmp/RtmpPNEcqm/8df4d3416997e4c49236ef90/0.txt")
 diverging,TRUE
-dwp,1
+dws,1
 event_gap,0
 height,14
 I,0.3
@@ -19,7 +19,7 @@ log_colors,TRUE
 noise_length,3
 numbering,TRUE
 numbering_interval,5
-numbering_offset,20
+numbering_offset,0
 outfile,F_subtract
 P,0.25
 p_value,1e-04

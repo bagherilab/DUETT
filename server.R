@@ -227,7 +227,9 @@ shinyServer(function(input, output) {
             get_data(), event_locations, event_details, concurrent_events,
             cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), linear_coeff = get_linear_coeff(), dws = get_dws()), 
             event_colors = c("red", "blue"),
-            ylim = get_plotting_parameters()$ylim)
+            ylim = get_plotting_parameters()$ylim,
+            xaxis_offset = get_numbering_offset(),
+            xaxis_interval = get_numbering_interval())
         })
       })
     }

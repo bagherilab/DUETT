@@ -1,6 +1,6 @@
 
-plot_data <- function(data_vector, event_locations, concurrent_events, n_col, event_colors = c("green", "blue"), ylim = c(0,max(data_vector, na.rm = T)), mar = c(4,4,3,3)) {
-  
+plot_data <- function(data_vector, event_locations, concurrent_events, n_col, event_colors = c("green", "blue"), ylim = c(0,max(data_vector, na.rm = T)), mar = c(4,4,3,3), xaxis_offset = 0, xaxis_interval = 5) {
+
   num_points = length(data_vector)
   
   # set graphing parameters
@@ -21,7 +21,7 @@ plot_data <- function(data_vector, event_locations, concurrent_events, n_col, ev
   
   # plot smoothed data alongside original data
   plot(nonevent_data, main = main, pch = 23, xaxt = "n", xlab = "", ylab = "", xlim = xlim, ylim = ylim, col = "grey40")
-  axis_info = round(seq(0,num_points,length.out=10))
+  axis_info = c(1, seq(1 + (abs(xaxis_interval) - 1) * sign(xaxis_interval), num_points, by = xaxis_interval))
   axis(1, at=axis_info, labels = axis_info)
   par(new = T)
   plot(x = upswing_indices, y = data_vector[upswing_indices], pch = 23, axes = F, bty = "n", main = "", xlab = "", ylab = "", xlim = xlim, ylim = ylim, col = event_colors[[1]], lwd = 2, cex = 1.3)
@@ -139,7 +139,7 @@ plot_PID_cutoffs <- function(event_details, event_locations, n_col = NULL, cutof
 
 ########################################################################################
 
-make_col_detail_plots <- function(col_group, data_mat, location_list, event_details, concurrent_events, event_colors, cutoffs, ylim = c(0, 1)) {
+make_col_detail_plots <- function(col_group, data_mat, location_list, event_details, concurrent_events, event_colors, cutoffs, ylim = c(0, 1), xaxis_offset = 0, xaxis_interval = 5) {
   
   par(mfrow = c(2,2))
   for (n_col in col_group) {
