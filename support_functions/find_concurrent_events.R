@@ -1,4 +1,6 @@
-find_concurrent_events <- function(event_locations, concurrent_distance = 2, comparison_point = "start", merge_1.5 = 2, event_types = c(-2,-1,1,2)) {
+find_concurrent_events <- function(event_locations, concurrent_distance = 2, comparison_point = "start", event_types = c(-2,-1,1,2)) {
+  
+  source("support_functions/utility_functions.R")
   
   concurrent_events = matrix(NA, nrow = 0, ncol = 4, dimnames = list(NULL, c("row1", "col1", "row2", "col2")))
   
@@ -23,10 +25,8 @@ find_concurrent_events <- function(event_locations, concurrent_distance = 2, com
   }
   
   # remove duplicate events (can happen if a ramp and a swing event start at same spot)
-  # browser()
-  unique_event_points = !duplicated(apply(event_points, 1, function(i) paste(i, collapse = "_")))
+    unique_event_points = !duplicated(apply(event_points, 1, function(i) paste(i, collapse = "_")))
   event_points = event_points[unique_event_points, ]
-  # browser()
   
   # check for one or no events
   if (nrow(event_points) %in% 0:1) {
