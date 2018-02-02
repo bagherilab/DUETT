@@ -20,7 +20,7 @@ get_shared_all <- function(event_group) {
   return(((get_event_group(event_locations1, event_group) & get_event_group(event_locations2, event_group)) & get_event_group(event_locations3, event_group)) | ((get_event_group(event_locations1, -event_group) & get_event_group(event_locations2, -event_group)) & get_event_group(event_locations3, -event_group)))
 }
 
-event_group = c(1,2,3,-1.5)
+event_group = c(1,2,3,1.5)
 shared_all = get_shared_all(event_group)
 
 shared_2 = ((get_event_group(event_locations1, event_group) + get_event_group(event_locations2, event_group) + get_event_group(event_locations3, event_group)) >= 2) | ((get_event_group(event_locations1, -event_group) + get_event_group(event_locations2, -event_group) + get_event_group(event_locations3, -event_group)) >= 2)
@@ -33,7 +33,7 @@ event_locations_shared_2[which(shared_2, arr.ind = T)] = event_locations1[which(
 
 concurrent_events = find_concurrent_events(event_locations_shared_all, 2, event_types = c(-1,1))
 
-pdf("replicate_shared_events.pdf", width = 14, height = 14)
+pdf("analysis/SRP/replicates/replicate_shared_events.pdf", width = 14, height = 14)
 make_visual(data_mat, event_locations_shared_all, concurrent_events)
 make_visual(data_mat, event_locations_shared_2, concurrent_events)
 dev.off()

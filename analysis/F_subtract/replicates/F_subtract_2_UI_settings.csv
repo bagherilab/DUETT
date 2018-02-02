@@ -6,24 +6,24 @@ concurrent_distance,2
 concurrent_ramps,FALSE
 concurrent_swings,TRUE
 custom_columns,1,11,16,26,57
-D,0.25
-data_file,list(name = "SRP_wt_rho_table.txt", size = 247814, type = "text/plain", datapath = "/tmp/Rtmp1o5yKL/6f8f0e2a2ac1adf853cef602/0.txt")
-diverging,FALSE
+D,0.6
+data_file,list(name = "F_subtract_2.txt", size = 126503, type = "text/plain", datapath = "/tmp/Rtmp1o5yKL/4b152a91b88aba57e895b8f6/0.txt")
+diverging,TRUE
 dws,1
-event_gap,1
+event_gap,0
 height,14
-I,0.2
+I,0.3
 I_length,default
 linear_coeff,0.15
-log_colors,FALSE
+log_colors,TRUE
 noise_length,3
 numbering,TRUE
 numbering_interval,5
 numbering_offset,0
-outfile,PID_minus50
-P,0.075
+outfile,F_subtract_2
+P,0.25
 p_value,1e-04
 ramp_length,40
 width,14
-window_size,5
-ylim,0,20
+window_size,7
+ylim,-20,20
