@@ -141,7 +141,7 @@ plot_PID_cutoffs <- function(event_details, event_locations, n_col = NULL, cutof
 
 make_col_detail_plots <- function(col_group, data_mat, location_list, event_details, concurrent_events, event_colors, cutoffs, ylim = c(0, 1), xaxis_offset = 0, xaxis_interval = 5) {
   
-  par(mfrow = c(2,2))
+  par(mfrow = c(ceiling(length(col_group) / 4),4))
   for (n_col in col_group) {
     # check for non-NAs
     if (sum(is.na(data_mat[,n_col, drop = F])) != nrow(data_mat)) {

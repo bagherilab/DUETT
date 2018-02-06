@@ -211,7 +211,7 @@ shinyServer(function(input, output) {
     
     # details
     counter = 1
-    num_plots = 4 # doesn't actually work
+    num_plots = 16
     columns_to_show = get_plotting_parameters()$columns_to_show
     suppressWarnings(col_groups <- split(columns_to_show, rep(1:ceiling(length(columns_to_show) / num_plots), each = num_plots)))
     
