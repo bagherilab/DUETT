@@ -29,7 +29,9 @@ find_concurrent_events <- function(event_locations, concurrent_distance = 2, com
   event_points = event_points[unique_event_points, ]
   
   # check for one or no events
-  if (nrow(event_points) %in% 0:1) {
+  if (is.null(nrow(event_points))) {
+    return(concurrent_events)
+  } else if (nrow(event_points) %in% 0:1) {
     return(concurrent_events)
   }
   
