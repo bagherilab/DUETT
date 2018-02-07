@@ -15,7 +15,7 @@ shinyUI(
              # load data
              wellPanel(
                titlePanel("File inputs and outputs"),
-               fileInput("data_file", "Input data file"),
+               fileInput("data_file", "Input data file", multiple = T),
                checkboxInput('diverging', "Diverging data?", FALSE),
                textInput("outfile", "Output file name", value = "example_output", placeholder = "example_output"),
                actionButton("table_output", label = "Print event file"),

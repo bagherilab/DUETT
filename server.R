@@ -66,30 +66,37 @@ shinyServer(function(input, output) {
     ifelse(is.null(input$data_file), data_file <- "example_data/SRP_Gln111_Rep1_rho_table.txt", data_file <- get_data_file()$datapath)
     data_mat = load_data(data_file)
   })
-  get_ncol <- reactive({ncol(get_data())})
-  get_nrow <- reactive({nrow(get_data())})
+  get_ncol <- reactive({ncol(get_data()[[1]])})
+  get_nrow <- reactive({nrow(get_data()[[1]])})
   
   # PID values
   calc_D_values <- reactive({
     data_mat = get_data()
     window_size = get_window_size()
-    if (window_size == 0) {D_values = data_mat * 0}
-    D_values = diff_data(data_mat, window_size)
+    if (window_size == 0) {
+      D_values = lapply(data_mat, function(i) i * 0)
+    } else {
+      D_values = lapply(data_mat, function(i) diff_data(i, window_size))
+    }
   })
   calc_I_values <- reactive({
     D_values = calc_D_values()
     num_row = get_nrow()
     num_col = get_ncol()
-    I_values = matrix(NA, nrow = num_row, ncol = num_col)
+    I_values = lapply(1:length(D_values), function(i) matrix(NA, nrow = num_row, ncol = num_col))
     if (get_I_length() > num_row) {return(I_values)}
-    for (n_col in 1:ncol(D_values)) {
-      I_values[(get_I_length()+1):num_row,n_col] = sapply(1:(num_row-get_I_length()), function(i) sum(D_values[i:(i+get_I_length()),n_col])) / get_I_length()
+    
+    for (n_file in 1:length(D_values)) {
+      for (n_col in 1:num_col) {
+        I_values[[n_file]][(get_I_length()+1):num_row,n_col] = sapply(1:(num_row-get_I_length()), function(i) sum(D_values[[n_file]][i:(i+get_I_length()),n_col])) / get_I_length()
+      }
     }
     I_values
   })
   calc_P_values <- reactive({
     D_values = calc_D_values()
-    P_values = D_values / abs(get_data() - D_values)
+    data_mat = get_data()
+    P_values = lapply(1:length(data_mat), function(i) D_values[[i]] / abs(data_mat[[i]] - D_values))
   })
   
   # linear ramp values
@@ -97,39 +104,42 @@ shinyServer(function(input, output) {
     library(lmtest)
     ramp_length = get_ramp_length()
     data_mat = get_data()
-    p_values = data_mat * NA
+    p_values = lapply(data_mat, function(i) i * NA)
     betas = p_values
     dws = p_values
     
-    if (ramp_length > nrow(data_mat)) { # error
+    num_rows = nrow(data_mat[[1]])
+    if (ramp_length > num_rows) { # error
       warning("Ramp window is higher than number of rows!")
       return(list(p_values = p_values, betas = betas, dws = dws))
     } else if (ramp_length <= 1) {
       return(list(p_values = p_values, betas = betas, dws = dws))
     }
     
-    for (n_col in 1:ncol(p_values)) {
-      for (n_window in 1:(nrow(p_values) - ramp_length - 1)) {
-        x = 1:ramp_length
-        y = data_mat[n_window:(n_window + ramp_length - 1), n_col]
-        
-        if (!any(is.na(y))) {
-          lm_summary = summary(lm(y ~ x))
+    for (n_file in 1:length(data_mat)) {
+      for (n_col in 1:ncol(p_values[[1]])) {
+        for (n_window in 1:(num_rows - ramp_length - 1)) {
+          x = 1:ramp_length
+          y = data_mat[[n_file]][n_window:(n_window + ramp_length - 1), n_col]
           
-          p_values[[n_window + ramp_length - 1, n_col]] = lm_summary$coefficients[[2,4]]
-          betas[[n_window + ramp_length - 1, n_col]] = lm_summary$coefficients[[2,1]]
-          
-          # check that y is not all the same (dwtest doesn't like that)
-          if (length(unique(y)) == 1) {
-            dws[[n_window + ramp_length - 1, n_col]] = Inf
-          } else {
-            # dws[[n_window + ramp_length - 1, n_col]] = dwtest(y ~ x)$p.value
-            dws[[n_window + ramp_length - 1, n_col]] = dwtest(y ~ x)$statistic
+          if (!any(is.na(y))) {
+            lm_summary = summary(lm(y ~ x))
+            
+            p_values[[n_file]][[n_window + ramp_length - 1, n_col]] = lm_summary$coefficients[[2,4]]
+            betas[[n_file]][[n_window + ramp_length - 1, n_col]] = lm_summary$coefficients[[2,1]]
+            
+            # check that y is not all the same (dwtest doesn't like that)
+            if (length(unique(y)) == 1) {
+              dws[[n_file]][[n_window + ramp_length - 1, n_col]] = 2
+            } else {
+              dws[[n_file]][[n_window + ramp_length - 1, n_col]] = dwtest(y ~ x)$statistic
+            }
           }
         }
       }
     }
-    list(p_values = p_values, betas = betas, dws = dws)
+    # reformat linear values
+    lapply(1:length(p_values), function(i) list(p_values = p_values[[i]], betas = betas[[i]], dws = dws[[i]]))
   })
   
   get_events <- reactive({
@@ -143,11 +153,17 @@ shinyServer(function(input, output) {
         I_values = calc_I_values()
         P_values = calc_P_values()
         linear_values = calc_linear_values()
+        data_mat = get_data()
         
-        event_storage = do.call(ShapeSeq_events, list(P_values, I_values, D_values, linear_values, get_data(), get_window_size(), get_I_length(), get_ramp_length(), get_noise_length(), get_event_gap(), cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), linear_coeff = get_linear_coeff(), dws = get_dws())))
-        
-        concurrent_events = find_concurrent_events(event_storage[[1]], concurrent_distance = get_concurrent_distance(), comparison_point = "start", event_types = get_conc_event_types())
-        return_list = c(event_storage, list(concurrent_events))
+        num_files = length(D_values)
+        event_storage = vector("list", num_files)
+        concurrent_events = vector("list", num_files)
+        for (n_file in 1:num_files) {
+          event_storage[[n_file]] = do.call(ShapeSeq_events, list(P_values[[n_file]], I_values[[n_file]], D_values[[n_file]], linear_values[[n_file]], data_mat[[n_file]], get_window_size(), get_I_length(), get_ramp_length(), get_noise_length(), get_event_gap(), cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), linear_coeff = get_linear_coeff(), dws = get_dws())))
+          
+          concurrent_events[[n_file]] = find_concurrent_events(event_storage[[n_file]][[1]], concurrent_distance = get_concurrent_distance(), comparison_point = "start", event_types = get_conc_event_types())
+        }
+        return_list = c(event_storage, concurrent_events) # concurrent_events was originally wrapped in an extra list?
       })
     }
   })
