@@ -212,7 +212,7 @@ shinyServer(function(input, output) {
     # details
     counter = 1
     num_plots = 16
-    columns_to_show = get_plotting_parameters()$columns_to_show
+    columns_to_show = get_columns_to_show()
     suppressWarnings(col_groups <- split(columns_to_show, rep(1:ceiling(length(columns_to_show) / num_plots), each = num_plots)))
     
     for (col_group in col_groups) {
@@ -242,7 +242,8 @@ shinyServer(function(input, output) {
     # check if update was called at least once
     if (identical(get_plotting_parameters(), NA)) {return()}
     
-    num_plots = ceiling(length(get_plotting_parameters()$columns_to_show) / 4)
+    # num_plots = ceiling(length(get_plotting_parameters()$columns_to_show) / 4)
+    num_plots = 16
     plot_output_list <- lapply(1:(num_plots+1), function(i) {
       plotname <- paste("plot", i, sep="")
       plotOutput(plotname, height = 72 * get_plotting_parameters()$height, width = 72 * get_plotting_parameters()$height)
@@ -343,7 +344,8 @@ shinyServer(function(input, output) {
       
       counter = 1
       columns_to_show = get_plotting_parameters()$columns_to_show
-      suppressWarnings(col_groups <- split(columns_to_show, rep(1:ceiling(length(columns_to_show) / 4), each = 4)))
+      num_plots = 16
+      suppressWarnings(col_groups <- split(columns_to_show, rep(1:ceiling(length(columns_to_show) / num_plots), each = num_plots)))
       
       for (col_group in col_groups) {
         counter = counter + 1
