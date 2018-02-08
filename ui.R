@@ -16,7 +16,7 @@ shinyUI(
              wellPanel(
                titlePanel("File inputs and outputs"),
                fileInput("data_file", "Input data file", multiple = T),
-               checkboxInput('diverging', "Diverging data?", FALSE),
+               checkboxInput('print_replicate', "Print replicate info?", FALSE),
                textInput("outfile", "Output file name", value = "example_output", placeholder = "example_output"),
                actionButton("table_output", label = "Print event file"),
                actionButton("table_UI_settings", label = "Print UI settings"),
@@ -35,6 +35,7 @@ shinyUI(
              wellPanel(
                titlePanel("Plotting parameters"),
                
+               checkboxInput('diverging', "Diverging data?", FALSE),
                checkboxInput('log_colors', 'Log the colors?', FALSE),
                
                checkboxInput('numbering', 'Number rows/columns?', TRUE),

@@ -17,12 +17,13 @@ shinyServer(function(input, output) {
   
   # file inputs and outputs
   get_data_file <- reactive({input$data_file})
-  get_agreement <- reactive({input$agreement})
+  get_print_replicate <- reactive({input$print_replicate})
   get_diverging <- reactive({input$diverging})
   get_width <- reactive({input$width})
   get_height <- reactive({input$height})
   
   # plotting parameters
+  get_agreement <- reactive({input$agreement})
   get_log_colors <- reactive({input$log_colors})
   get_numbering <- reactive({input$numbering})
   get_numbering_offset <- reactive({sanitize(input$numbering_offset, "numbering_offset")})
@@ -148,6 +149,24 @@ shinyServer(function(input, output) {
     lapply(1:length(p_values), function(i) list(p_values = p_values[[i]], betas = betas[[i]], dws = dws[[i]]))
   })
   
+  get_replicate_events <- reactive({
+    D_values = calc_D_values()
+    I_values = calc_I_values()
+    P_values = calc_P_values()
+    linear_values = calc_linear_values()
+    data_mat = get_data()
+    
+    num_files = length(D_values)
+    event_storage = vector("list", num_files)
+    concurrent_events = vector("list", num_files)
+    for (n_file in 1:num_files) {
+      event_storage[[n_file]] = do.call(ShapeSeq_events, list(P_values[[n_file]], I_values[[n_file]], D_values[[n_file]], linear_values[[n_file]], data_mat[[n_file]], get_window_size(), get_I_length(), get_ramp_length(), get_noise_length(), get_event_gap(), cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), linear_coeff = get_linear_coeff(), dws = get_dws())))
+      
+      concurrent_events[[n_file]] = find_concurrent_events(event_storage[[n_file]][[1]], concurrent_distance = get_concurrent_distance(), comparison_point = "start", event_types = get_conc_event_types())
+    }
+    return_list = list(event_storage, concurrent_events)
+  })
+  
   get_events <- reactive({
     if (get_update() == 0) {
       return_list = NA
@@ -155,20 +174,8 @@ shinyServer(function(input, output) {
       # only output file when button is pressed (I don't get this logic)
       isolate({
         
-        D_values = calc_D_values()
-        I_values = calc_I_values()
-        P_values = calc_P_values()
-        linear_values = calc_linear_values()
-        data_mat = get_data()
-        
-        num_files = length(D_values)
-        event_storage = vector("list", num_files)
-        concurrent_events = vector("list", num_files)
-        for (n_file in 1:num_files) {
-          event_storage[[n_file]] = do.call(ShapeSeq_events, list(P_values[[n_file]], I_values[[n_file]], D_values[[n_file]], linear_values[[n_file]], data_mat[[n_file]], get_window_size(), get_I_length(), get_ramp_length(), get_noise_length(), get_event_gap(), cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), linear_coeff = get_linear_coeff(), dws = get_dws())))
-          
-          # concurrent_events[[n_file]] = find_concurrent_events(event_storage[[n_file]][[1]], concurrent_distance = get_concurrent_distance(), comparison_point = "start", event_types = get_conc_event_types())
-        }
+        event_storage = get_replicate_events()[[1]]
+        num_files = length(event_storage)
         
         if (num_files > 1) {
           # merge replicates
@@ -292,14 +299,35 @@ shinyServer(function(input, output) {
     if (input$table_output == 0) return()
     
     isolate({
+      
+      # print replicates too
+      if (get_print_replicate()) {
+        return_list = get_replicate_events()
+        event_storage = return_list[[1]]
+        concurrent_events = return_list[[2]]
+        
+        for (n_file in 1:length(event_storage)) {
+          write.table(event_storage[[n_file]][[1]], file = paste(input$outfile, "_", n_file, ".csv", sep = ""), sep = ",", quote = F, row.names = F)
+          
+          if (nrow(concurrent_events[[n_file]]) >= 1) {
+            event_type1 = sapply(1:nrow(concurrent_events[[n_file]]), function(i) event_storage[[n_file]][[1]][[concurrent_events[[n_file]][i,1], concurrent_events[[n_file]][i,2]]])
+            event_type2 = sapply(1:nrow(concurrent_events[[n_file]]), function(i) event_storage[[n_file]][[1]][[concurrent_events[[n_file]][i,3], concurrent_events[[n_file]][i,4]]])
+          } else {
+            event_type1 = c()
+            event_type2 = c()
+          }
+          concurrent_events_table = cbind(concurrent_events[[n_file]], event_type1, event_type2)
+          write.table(concurrent_events_table, file = paste(input$outfile, "_concurrent_events_", n_file, ".csv", sep = ""), sep = ",", quote = F, row.names = F)
+        }
+      }
+      
+      # print events
       return_list = get_events()
       event_locations = return_list[[1]]
       concurrent_events = return_list[[3]]
-      
       write.table(event_locations, file = paste(input$outfile, ".csv", sep = ""), sep = ",", quote = F, row.names = F)
       
-      list(window_size = get_window_size(), I_length = get_I_length(), ramp_length = get_ramp_length(), noise_length = get_noise_length(), event_gap = get_event_gap(), P = get_P(), I = get_I(), D = get_D(), ramp_p_value = get_p_value(), linear_coeff = get_linear_coeff(), dws = get_dws(), concurrent_distance = get_concurrent_distance(), concurrent_event_types = get_conc_event_types())
-      
+      # print concurrent_events
       if (nrow(concurrent_events) >= 1) {
         event_type1 = sapply(1:nrow(concurrent_events), function(i) event_locations[[concurrent_events[i,1], concurrent_events[i,2]]])
         event_type2 = sapply(1:nrow(concurrent_events), function(i) event_locations[[concurrent_events[i,3], concurrent_events[i,4]]])
@@ -309,6 +337,8 @@ shinyServer(function(input, output) {
       }
       concurrent_events_table = cbind(concurrent_events, event_type1, event_type2)
       write.table(concurrent_events_table, file = paste(input$outfile, "_concurrent_events.csv", sep = ""), sep = ",", quote = F, row.names = F)
+      
+      
     })
   })
   
@@ -316,15 +346,36 @@ shinyServer(function(input, output) {
     
     if (input$table_details_output == 0) return()
     
+    write_table <- function(table_obj, file_ID, replicate_num = NULL) {
+      if (is.null(replicate_num)) {
+        write.table(table_obj, file = paste(input$outfile, "_", file_ID, ".csv", sep = ""), sep = ",", quote = F)
+      } else {
+        write.table(table_obj, file = paste(input$outfile, "_", file_ID, "_", replicate_num, ".csv", sep = ""), sep = ",", quote = F)
+      }
+    }
+    
     isolate({
+      if (get_print_replicate()) {
+        event_storage = get_replicate_events()[[1]]
+        
+        for (n_file in 1:length(event_details)) {
+          write_table(event_storage[[n_file]][[2]]$P_values, put$outfile, "P", file_ID)
+          write_table(event_storage[[n_file]][[2]]$I_values, put$outfile, "I", file_ID)
+          write_table(event_storage[[n_file]][[2]]$D_values, put$outfile, "D", file_ID)
+          write_table(event_storage[[n_file]][[2]]$p_values, put$outfile, "p_values", file_ID)
+          write_table(event_storage[[n_file]][[2]]$betas, put$outfile, "betas", file_ID)
+          write_table(event_storage[[n_file]][[2]]$dws, put$outfile, "dws", file_ID)
+        }
+      }
+      
       event_details = get_events()[[2]]
       
-      write.table(event_details$P_values, file = paste(input$outfile, "_P.csv", sep = ""), sep = ",", quote = F)
-      write.table(event_details$I_values, file = paste(input$outfile, "_I.csv", sep = ""), sep = ",", quote = F)
-      write.table(event_details$D_values, file = paste(input$outfile, "_D.csv", sep = ""), sep = ",", quote = F)
-      write.table(event_details$p_values, file = paste(input$outfile, "_p_values.csv", sep = ""), sep = ",", quote = F)
-      write.table(event_details$betas, file = paste(input$outfile, "_betas.csv", sep = ""), sep = ",", quote = F)
-      write.table(event_details$dws, file = paste(input$outfile, "_dws.csv", sep = ""), sep = ",", quote = F)
+      write_table(event_details$P_values, put$outfile, "P", NULL)
+      write_table(event_details$I_values, put$outfile, "I", NULL)
+      write_table(event_details$D_values, put$outfile, "D", NULL)
+      write_table(event_details$p_values, put$outfile, "p_values", NULL)
+      write_table(event_details$betas, put$outfile, "betas", NULL)
+      write_table(event_details$dws, put$outfile, "dws", NULL)
     })
   })
   
@@ -352,13 +403,36 @@ shinyServer(function(input, output) {
       # store number form of outfile_format
       outfile_format = as.numeric(input$outfile_format)
       
+      width = get_plotting_parameters()$width
+      height = get_plotting_parameters()$height
+      
+      # print replicates
+      if (get_print_replicate()) {
+        return_list = get_replicate_events()
+        event_storage = return_list[[1]]
+        concurrent_events = return_list[[2]]
+        data_mat = get_data()
+        
+        for (n_file in 1:length(event_storage)) {
+          filename = paste(input$outfile, "_", n_file, ".pdf", sep = "")
+          pdf(filename, width = width, height = height)
+          make_visual(data_mat[[n_file]], event_storage[[n_file]][[1]], 
+                      concurrent_events[[n_file]], get_plotting_parameters()$log_colors,
+                      numbering = get_plotting_parameters()$numbering, 
+                      numbering_offset = get_plotting_parameters()$numbering_offset,
+                      numbering_interval = get_plotting_parameters()$numbering_interval,
+                      axis_label_resize = get_plotting_parameters()$axis_label_resize,
+                      box_resize = get_plotting_parameters()$box_resize,
+                      diverging = get_plotting_parameters()$diverging)
+          dev.off()
+        }
+      }
+      
+      # print shared
       return_list = get_events()
       event_locations = return_list[[1]]
       event_details = return_list[[2]]
       concurrent_events = return_list[[3]]
-      
-      width = get_plotting_parameters()$width
-      height = get_plotting_parameters()$height
       filename = paste(input$outfile, ".pdf", sep = "")
       
       pdf(filename, width = width, height = height)
@@ -371,12 +445,50 @@ shinyServer(function(input, output) {
                   diverging = get_plotting_parameters()$diverging)
       dev.off()
       
+      ############# columns #############
+      
+      num_plots = 16
+      
+      # print replicates
+      if (get_print_replicate()) {
+        data_mat = get_data()
+        return_list = get_replicate_events()
+        event_storage = return_list[[1]]
+        concurrent_events = return_list[[2]]
+        for (n_file in 1:length(data_mat)) {
+          filename = paste(input$outfile, "_columns_", n_file, ".pdf", sep = "")
+          pdf(filename, width = width, height = height)
+          
+          counter = 1
+          columns_to_show = get_plotting_parameters()$columns_to_show
+          suppressWarnings(col_groups <- split(columns_to_show, rep(1:ceiling(length(columns_to_show) / num_plots), each = num_plots)))
+          
+          for (col_group in col_groups) {
+            counter = counter + 1
+            my_col_group <- col_group
+            my_i <- counter
+            plot_name = paste("plot", my_i, sep = "")
+            make_col_detail_plots(
+              my_col_group, data_mat[n_file], event_storage[[n_file]][[1]],  # be sure to pass data_mat as a list
+              event_storage[[n_file]][[2]], concurrent_events[[n_file]],
+              cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), linear_coeff = get_linear_coeff(), dws = get_dws()), 
+              event_colors = c("red", "blue"),
+              ylim = get_plotting_parameters()$ylim)
+          }
+          dev.off()
+        }
+      }
+      
+      # print shared
       filename = paste(input$outfile, "_columns.pdf", sep = "")
+      return_list = get_events()
+      event_locations = return_list[[1]]
+      event_details = return_list[[2]]
+      concurrent_events = return_list[[3]]
       pdf(filename, width = width, height = height)
       
       counter = 1
       columns_to_show = get_plotting_parameters()$columns_to_show
-      num_plots = 16
       suppressWarnings(col_groups <- split(columns_to_show, rep(1:ceiling(length(columns_to_show) / num_plots), each = num_plots)))
       
       for (col_group in col_groups) {
