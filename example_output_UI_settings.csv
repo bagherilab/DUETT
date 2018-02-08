@@ -1,22 +1,23 @@
 V1
+agreement,3
 axis_label_resize,1
 box_resize,1
-column_display,3
+column_display,2
 concurrent_distance,2
 concurrent_ramps,FALSE
 concurrent_swings,TRUE
 custom_columns,1,11,16,26,57
-D,0.6
-data_file,list(name = "F_subtract.txt", size = 155579, type = "text/plain", datapath = "/tmp/Rtmp1o5yKL/c219959739de8361b94c3a0e/0.txt")
-diverging,TRUE
-dws,1.2
-event_gap,0
+D,0.8
+data_file,list(name = c("SRP_wt_Rep1_rho_table.txt", "SRP_wt_Rep2_rho_table.txt", "SRP_wt_Rep3_rho_table.txt"), size = c(167612, 167717, 167524), type = c("text/plain", "text/plain", "text/plain"), datapath = c("/tmp/Rtmp1o5yKL/f4886336c86cdb0b767581c4/0.txt", "/tmp/Rtmp1o5yKL/f4886336c86cdb0b767581c4/1.txt", "/tmp/Rtmp1o5yKL/f4886336c86cdb0b767581c4/2.txt"))
+diverging,FALSE
+dws,1
+event_gap,1
 height,14
-I,0.3
+I,0.8
 I_length,default
 linear_coeff,0.15
-log_colors,TRUE
-noise_length,3
+log_colors,FALSE
+noise_length,2
 numbering,TRUE
 numbering_interval,5
 numbering_offset,0
@@ -25,5 +26,5 @@ P,0.25
 p_value,1e-04
 ramp_length,40
 width,14
-window_size,7
-ylim,-20,20
+window_size,9
+ylim,0,20

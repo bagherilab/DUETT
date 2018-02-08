@@ -5,6 +5,7 @@ rm(list=ls())
 source("support_functions/load_data.R")
 source("support_functions/sanitize.R")
 source("support_functions/ShapeSeq_events.R")
+source("support_functions/merge_replicates.R")
 source("support_functions/plotting/plot_dump_PID.R")
 source("support_functions/utility_functions.R")
 source("support_functions/find_concurrent_events.R")
@@ -16,6 +17,7 @@ shinyServer(function(input, output) {
   
   # file inputs and outputs
   get_data_file <- reactive({input$data_file})
+  get_agreement <- reactive({input$agreement})
   get_diverging <- reactive({input$diverging})
   get_width <- reactive({input$width})
   get_height <- reactive({input$height})
@@ -66,6 +68,10 @@ shinyServer(function(input, output) {
     ifelse(is.null(input$data_file), data_file <- "example_data/SRP_Gln111_Rep1_rho_table.txt", data_file <- get_data_file()$datapath)
     data_mat = load_data(data_file)
   })
+  get_mean_data <- reactive({
+    data_mat = get_data()
+    data_mat = Reduce("+", data_mat) / length(data_mat)
+  })
   get_ncol <- reactive({ncol(get_data()[[1]])})
   get_nrow <- reactive({nrow(get_data()[[1]])})
   
@@ -96,7 +102,7 @@ shinyServer(function(input, output) {
   calc_P_values <- reactive({
     D_values = calc_D_values()
     data_mat = get_data()
-    P_values = lapply(1:length(data_mat), function(i) D_values[[i]] / abs(data_mat[[i]] - D_values))
+    P_values = lapply(1:length(data_mat), function(i) D_values[[i]] / abs(data_mat[[i]] - D_values[[i]]))
   })
   
   # linear ramp values
@@ -161,9 +167,19 @@ shinyServer(function(input, output) {
         for (n_file in 1:num_files) {
           event_storage[[n_file]] = do.call(ShapeSeq_events, list(P_values[[n_file]], I_values[[n_file]], D_values[[n_file]], linear_values[[n_file]], data_mat[[n_file]], get_window_size(), get_I_length(), get_ramp_length(), get_noise_length(), get_event_gap(), cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), linear_coeff = get_linear_coeff(), dws = get_dws())))
           
-          concurrent_events[[n_file]] = find_concurrent_events(event_storage[[n_file]][[1]], concurrent_distance = get_concurrent_distance(), comparison_point = "start", event_types = get_conc_event_types())
+          # concurrent_events[[n_file]] = find_concurrent_events(event_storage[[n_file]][[1]], concurrent_distance = get_concurrent_distance(), comparison_point = "start", event_types = get_conc_event_types())
         }
-        return_list = c(event_storage, concurrent_events) # concurrent_events was originally wrapped in an extra list?
+        
+        if (num_files > 1) {
+          # merge replicates
+          event_storage = merge_replicates(event_storage, get_agreement())
+        } else {
+          event_storage = event_storage[[1]]
+        }
+        
+        concurrent_events = find_concurrent_events(event_storage[[1]], concurrent_distance = get_concurrent_distance(), comparison_point = "start", event_types = get_conc_event_types())
+        
+        return_list = c(event_storage, list(concurrent_events))
       })
     }
   })
@@ -217,7 +233,7 @@ shinyServer(function(input, output) {
     
     # heatmap
     local({output[["plot1"]] <- renderPlot({
-      make_visual(get_data(), event_locations, concurrent_events, get_plotting_parameters()$log_colors,
+      make_visual(get_mean_data(), event_locations, concurrent_events, get_plotting_parameters()$log_colors,
                   numbering = get_plotting_parameters()$numbering,
                   numbering_offset = get_plotting_parameters()$numbering_offset,
                   numbering_interval = get_plotting_parameters()$numbering_interval,
@@ -346,7 +362,7 @@ shinyServer(function(input, output) {
       filename = paste(input$outfile, ".pdf", sep = "")
       
       pdf(filename, width = width, height = height)
-      make_visual(get_data(), event_locations, concurrent_events, get_plotting_parameters()$log_colors,
+      make_visual(get_mean_data(), event_locations, concurrent_events, get_plotting_parameters()$log_colors,
                   numbering = get_plotting_parameters()$numbering, 
                   numbering_offset = get_plotting_parameters()$numbering_offset,
                   numbering_interval = get_plotting_parameters()$numbering_interval,

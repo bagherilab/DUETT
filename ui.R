@@ -58,6 +58,7 @@ shinyUI(
              wellPanel(
                titlePanel("PID parameters"),
                
+               numericInput("agreement", label = "Agreement threshold across replicates", value = 1, min = 1, step = 1),
                numericInput("P", label = "Proportional (P)", value = 0.25, min = 0, step = 0.1),
                numericInput("I", label = "Integral (I)", value = 0.8, min = 0, step = 0.1),
                textInput("I_length", label = "I length (default=window size)", value = "default"),

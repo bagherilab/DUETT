@@ -1,6 +1,6 @@
 
-plot_data <- function(data_vector, event_locations, concurrent_events, n_col, event_colors = c("green", "blue"), ylim = c(0,max(data_vector, na.rm = T)), mar = c(4,4,3,3), xaxis_offset = 0, xaxis_interval = 5) {
-
+plot_data <- function(data_vector, event_locations, concurrent_events, n_col, event_colors = c("green", "blue"), ylim = c(0,max(data_vector, na.rm = T)), mar = c(4,4,3,3), xaxis_offset = 0, xaxis_interval = 5, first_plot = T) {
+  
   num_points = length(data_vector)
   
   # set graphing parameters
@@ -19,10 +19,16 @@ plot_data <- function(data_vector, event_locations, concurrent_events, n_col, ev
   
   main = paste("Column", n_col)
   
+  # lay down first plot stuff
+  if (first_plot) {
+    plot(0, type = "n", main = main, pch = 23, xaxt = "n", xlab = "", ylab = "", xlim = xlim, ylim = ylim)
+    axis_info = c(1, seq(1 + (abs(xaxis_interval) - 1) * sign(xaxis_interval), num_points, by = xaxis_interval))
+    axis(1, at=axis_info, labels = axis_info)
+  }
+  par(new = T)
   # plot smoothed data alongside original data
-  plot(nonevent_data, main = main, pch = 23, xaxt = "n", xlab = "", ylab = "", xlim = xlim, ylim = ylim, col = "grey40")
-  axis_info = c(1, seq(1 + (abs(xaxis_interval) - 1) * sign(xaxis_interval), num_points, by = xaxis_interval))
-  axis(1, at=axis_info, labels = axis_info)
+  plot(nonevent_data, pch = 23, axes = F, bty = "n", main = "", xlab = "", ylab = "", xlim = xlim, ylim = ylim, col = "grey40")
+
   par(new = T)
   plot(x = upswing_indices, y = data_vector[upswing_indices], pch = 23, axes = F, bty = "n", main = "", xlab = "", ylab = "", xlim = xlim, ylim = ylim, col = event_colors[[1]], lwd = 2, cex = 1.3)
   par(new = T)
@@ -38,7 +44,6 @@ plot_data <- function(data_vector, event_locations, concurrent_events, n_col, ev
         par(new = T)
         lm_obj = lm(data_vector[ramp_indices[[n_ramp]][ramp_start:ramp_end]] ~ ramp_indices[[n_ramp]][ramp_start:ramp_end])
         
-        # browser()
         plot(x = ramp_indices[[n_ramp]][ramp_start:ramp_end], y = lm_obj$fitted.values, pch = 23, axes = F, bty = "n", main = "", xlab = "", ylab = "", xlim = xlim, ylim = ylim, col = event_colors[[n_ramp]], lwd = 6, cex = 1.3, type = "l")
         ramp_start = ramp_end + 1
       }
@@ -143,9 +148,13 @@ make_col_detail_plots <- function(col_group, data_mat, location_list, event_deta
   
   par(mfrow = c(4,4))
   for (n_col in col_group) {
-    # check for non-NAs
-    if (sum(is.na(data_mat[,n_col, drop = F])) != nrow(data_mat)) {
-      plot_data(data_mat[,n_col, drop = F], location_list[,n_col, drop = F], concurrent_events, n_col, event_colors = event_colors, ylim = ylim)
+    first_plot = T
+    for (n_file in 1:length(data_mat)) {
+      # check for non-NAs
+      if (sum(is.na(data_mat[[n_file]][,n_col, drop = F])) != nrow(data_mat[[n_file]])) {
+        plot_data(data_mat[[n_file]][,n_col, drop = F], location_list[,n_col, drop = F], concurrent_events, n_col, event_colors = event_colors, ylim = ylim, first_plot = first_plot)
+        first_plot = F
+      }
     }
   }
 }
