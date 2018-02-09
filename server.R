@@ -66,7 +66,8 @@ shinyServer(function(input, output) {
   
   #################### calculate for events ####################
   get_data <- reactive({
-    ifelse(is.null(input$data_file), data_file <- "example_data/SRP_Gln111_Rep1_rho_table.txt", data_file <- get_data_file()$datapath)
+    # ifelse(is.null(input$data_file), data_file <- "example_data/SRP_Gln111_Rep1_rho_table.txt", data_file <- get_data_file()$datapath)
+    ifelse(is.null(input$data_file), data_file <- list("example_data/other_data/F_wt_0mM_NaF_Rep1_rho_table.txt", "example_data/other_data/F_wt_0mM_NaF_Rep2_rho_table.txt", "example_data/other_data/F_wt_0mM_NaF_Rep3_rho_table.txt"), data_file <- get_data_file()$datapath)
     data_mat = load_data(data_file)
   })
   get_mean_data <- reactive({
@@ -473,7 +474,9 @@ shinyServer(function(input, output) {
               event_storage[[n_file]][[2]], concurrent_events[[n_file]],
               cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), linear_coeff = get_linear_coeff(), dws = get_dws()), 
               event_colors = c("red", "blue"),
-              ylim = get_plotting_parameters()$ylim)
+              ylim = get_plotting_parameters()$ylim,
+              xaxis_offset = get_numbering_offset(),
+              xaxis_interval = get_numbering_interval())
           }
           dev.off()
         }
@@ -501,7 +504,9 @@ shinyServer(function(input, output) {
           get_data(), event_locations, event_details, concurrent_events,
           cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), linear_coeff = get_linear_coeff(), dws = get_dws()), 
           event_colors = c("red", "blue"),
-          ylim = get_plotting_parameters()$ylim)
+          ylim = get_plotting_parameters()$ylim,
+          xaxis_offset = get_numbering_offset(),
+          xaxis_interval = get_numbering_interval())
       }
       dev.off()
     })
