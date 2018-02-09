@@ -23,7 +23,7 @@ plot_data <- function(data_vector, event_locations, concurrent_events, n_col, ev
   if (first_plot) {
     plot(0, type = "n", main = main, pch = 23, xaxt = "n", xlab = "", ylab = "", xlim = xlim, ylim = ylim)
     axis_info = c(1, seq(1 + (abs(xaxis_interval) - 1) * sign(xaxis_interval), num_points, by = xaxis_interval))
-    axis(1, at=axis_info, labels = axis_info)
+    axis(1, at=axis_info, labels = axis_info + xaxis_offset)
   }
   par(new = T)
   # plot smoothed data alongside original data
@@ -153,7 +153,7 @@ make_col_detail_plots <- function(col_group, data_mat, location_list, event_deta
     for (n_file in 1:length(data_mat)) {
       # check for non-NAs
       if (sum(is.na(data_mat[[n_file]][,n_col, drop = F])) != nrow(data_mat[[n_file]])) {
-        plot_data(data_mat[[n_file]][,n_col, drop = F], location_list[,n_col, drop = F], concurrent_events, n_col, event_colors = event_colors, ylim = ylim, first_plot = first_plot)
+        plot_data(data_mat[[n_file]][,n_col, drop = F], location_list[,n_col, drop = F], concurrent_events, n_col, event_colors = event_colors, ylim = ylim, xaxis_offset = xaxis_offset, xaxis_interval = xaxis_interval, first_plot = first_plot)
         first_plot = F
       }
     }
