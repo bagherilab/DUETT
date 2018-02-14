@@ -47,7 +47,7 @@ shinyUI(
                  numericInput("box_resize", label = "Resize boxes", value = 1, min = 0, step = 0.05)
                ),
                titlePanel(h4("Column detail plotting")),
-               textInput("ylim", label = "y axis range", value = "-20,20", placeholder = "-20,20"),
+               textInput("ylim", label = "y axis range", value = "0,20", placeholder = "0,20"),
                selectInput("column_display", label = "Columns to display?", choices = list("Custom columns" = 1, "All columns" = 2, "Columns with events" = 3), selected = 2),
                conditionalPanel(
                  condition = "input.column_display == 1",
@@ -74,7 +74,7 @@ shinyUI(
       column(3, 
              wellPanel(
                titlePanel("Linear ramp parameters"),
-               numericInput("ramp_length", label = "Ramp length", value = 40, min = 0, step = 1),
+               numericInput("ramp_length", label = "Ramp length", value = 30, min = 0, step = 1),
                numericInput("p_value", label = "Ramp p-value", value = 0.0001, min = 0, max = 1, step = 0.0001),
                numericInput("linear_coeff", label = "Linear coefficient", value = 0.15, min = 0, step = 0.01),
                numericInput("dws", label = "Durbin-Watson statistic", value = 1.25, min = 0, max = 4, step = 0.1),
