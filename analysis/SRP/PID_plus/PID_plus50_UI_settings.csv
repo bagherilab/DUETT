@@ -1,4 +1,5 @@
 V1
+agreement,3
 axis_label_resize,1
 box_resize,1
 column_display,2
@@ -6,24 +7,25 @@ concurrent_distance,2
 concurrent_ramps,FALSE
 concurrent_swings,TRUE
 custom_columns,1,11,16,26,57
-D,0.75
-data_file,list(name = "SRP_wt_rho_table.txt", size = 247814, type = "text/plain", datapath = "/tmp/Rtmp1o5yKL/6f8f0e2a2ac1adf853cef602/0.txt")
+D,0.6
+data_file,list(name = c("SRP_wt_Rep1_rho_table.txt", "SRP_wt_Rep2_rho_table.txt", "SRP_wt_Rep3_rho_table.txt"), size = c(167612, 167717, 167524), type = c("text/plain", "text/plain", "text/plain"), datapath = c("/tmp/RtmpBCXlZL/210b09cd10059d2d988e52e1/0.txt", "/tmp/RtmpBCXlZL/210b09cd10059d2d988e52e1/1.txt", "/tmp/RtmpBCXlZL/210b09cd10059d2d988e52e1/2.txt"))
 diverging,FALSE
-dws,1
+dws,1.25
 event_gap,1
 height,14
-I,0.6
+I,0.45
 I_length,default
 linear_coeff,0.15
 log_colors,FALSE
 noise_length,3
 numbering,TRUE
 numbering_interval,5
-numbering_offset,0
+numbering_offset,20
 outfile,PID_plus50
 P,0.225
+print_replicate,FALSE
 p_value,1e-04
-ramp_length,40
+ramp_length,30
 width,14
-window_size,5
+window_size,9
 ylim,0,20
