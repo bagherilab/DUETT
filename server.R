@@ -66,8 +66,7 @@ shinyServer(function(input, output) {
   
   #################### calculate for events ####################
   get_data <- reactive({
-    ifelse(is.null(input$data_file), data_file <- "example_data/SRP_Gln111_Rep1_rho_table.txt", data_file <- get_data_file()$datapath)
-    # ifelse(is.null(input$data_file), data_file <- list("example_data/other_data/F_wt_0mM_NaF_Rep1_rho_table.txt", "example_data/other_data/F_wt_0mM_NaF_Rep2_rho_table.txt", "example_data/other_data/F_wt_0mM_NaF_Rep3_rho_table.txt"), data_file <- get_data_file()$datapath)
+    ifelse(is.null(input$data_file), data_file <- "example_data/SRP_wt_Rep1_rho_table.txt", data_file <- get_data_file()$datapath)
     data_mat = load_data(data_file)
   })
   get_mean_data <- reactive({
