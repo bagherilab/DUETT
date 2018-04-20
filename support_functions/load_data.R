@@ -41,6 +41,28 @@ load_data <- function(filename) {
   #   }
   # }
   # raw_data = apply(raw_data, 1, function(i) i / mean(i, na.rm = T))
+  
+  
+  #### HACK
+  # for (n_file in 1:length(filename)) {
+  #   raw_data_list[[n_file]][is.na(raw_data_list[[n_file]])] = 0
+  #   
+  #   # retain only first 100 columns
+  #   # data_mat = data_mat[,1:100]
+  #   
+  #   # transpose so samples become variables
+  #   # data_mat = t(data_mat)
+  #   
+  #   cluster_obj = hclust(dist(data_mat))
+  #   
+  #   plot(cluster_obj)
+  #   cluster_cut = cutree(cluster_obj, 10)
+  #   
+  #   # reorder columns according to clusters
+  #   data_mat = data_mat[,order(cluster_cut)]
+  # }
+  #### hack
+  
   return(raw_data_list)
   
 }
