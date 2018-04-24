@@ -1,5 +1,5 @@
 
-plot_data <- function(data_vector, event_locations, concurrent_events, n_col, event_colors = c("green", "blue"), ylim = c(0,max(data_vector, na.rm = T)), mar = c(4,4,3,3), xaxis_offset = 0, xaxis_interval = 5, first_plot = T) {
+plot_data <- function(data_vector, event_locations, concurrent_events, n_col, event_colors = c("green", "blue"), ylim = c(0,max(data_vector, na.rm = T)), mar = c(4,4,3,3), xaxis_offset = 0, xaxis_interval = 5, dot_color = "grey40", disable_title = F, first_plot = T) {
   
   num_points = length(data_vector)
   
@@ -17,7 +17,7 @@ plot_data <- function(data_vector, event_locations, concurrent_events, n_col, ev
     nonevent_data[c(upswing_indices, downswing_indices)] = NA
   }
   
-  main = paste("Column", n_col)
+  ifelse(disable_title, main <- "", main <- paste("Columns", n_col))
   
   # lay down first plot stuff
   if (first_plot) {
@@ -27,7 +27,7 @@ plot_data <- function(data_vector, event_locations, concurrent_events, n_col, ev
   }
   par(new = T)
   # plot smoothed data alongside original data
-  plot(nonevent_data, pch = 23, axes = F, bty = "n", main = "", xlab = "", ylab = "", xlim = xlim, ylim = ylim, col = "grey40")
+  plot(nonevent_data, pch = 23, axes = F, bty = "n", main = "", xlab = "", ylab = "", xlim = xlim, ylim = ylim, col = dot_color)
 
   par(new = T)
   plot(x = upswing_indices, y = data_vector[upswing_indices], pch = 23, axes = F, bty = "n", main = "", xlab = "", ylab = "", xlim = xlim, ylim = ylim, col = event_colors[[1]], lwd = 2, cex = 1.3)
