@@ -117,5 +117,5 @@ for (n_col in names(cor_list)) {
   table_output[,which(colnames(table_output) == n_col) + 1] = cor_list[[n_col]]
 }
 
-write.table(table_output, file = "column_correlations.csv", quote = F, row.names = F)
-write.table(p_values, file = "correlation_p_values.csv", quote = F, row.names = F)
+write.table(table_output, file = "column_correlations.csv", sep = ",", quote = F, row.names = F)
+write.table(p_values, file = "correlation_p_values.csv", sep = ",", quote = F, row.names = F)
