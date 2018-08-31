@@ -1,12 +1,14 @@
 rm(list=ls())
 
 if(!("shiny" %in% installed.packages())) install.packages("shiny")
+if(!("shinyalert" %in% installed.packages())) install.packages("shinyalert")
 
 library(shiny)
+library(shinyalert)
 
 shinyUI(
   bootstrapPage(
-    titlePanel("SHAPE-Seq event detector"),
+    titlePanel("DUETT"),
     
     fluidRow(
       column(3, 
@@ -33,7 +35,7 @@ shinyUI(
       column(3, 
              # plotting parameters
              wellPanel(
-               titlePanel("Plotting parameters"),
+               titlePanel("Plotting"),
                
                checkboxInput('diverging', "Diverging data?", FALSE),
                checkboxInput('log_colors', 'Log the colors?', FALSE),
@@ -57,23 +59,23 @@ shinyUI(
       
       column(3, 
              wellPanel(
-               titlePanel("PID parameters"),
+               titlePanel("PID"),
                
-               numericInput("agreement", label = "Agreement threshold across replicates", value = 3, min = 3, step = 1),
+               numericInput("agreement", label = "Replicate agreement", value = 3, min = 1, step = 1),
                numericInput("P", label = "Proportional (P)", value = 0.2, min = 0, step = 0.1),
                numericInput("I", label = "Integral (I)", value = 0.25, min = 0, step = 0.1),
-               textInput("I_length", label = "I length (default=window size)", value = "default"),
+               textInput("I_length", label = "I length", value = "default"),
                numericInput("D", label = "Differential (D)", value = 0.5, min = 0, step = 0.1),
                numericInput("window_size", label = "Window size", value = 9, min = 1, step = 1),
                
                titlePanel(h4("Noise parameters")),
-               numericInput("noise_length", label = "Noise length", value = 3, min = 0, step = 1),
+               numericInput("noise_length", label = "Noise length", value = 4, min = 0, step = 1),
                numericInput("event_gap", label = "Event gap", value = 1, min = 0, step = 1)
              )),
       
       column(3, 
              wellPanel(
-               titlePanel("Linear ramp parameters"),
+               titlePanel("Linear ramp"),
                numericInput("ramp_length", label = "Ramp length", value = 30, min = 0, step = 1),
                numericInput("p_value", label = "Ramp p-value", value = 0.0001, min = 0, max = 1, step = 0.0001),
                numericInput("linear_coeff", label = "Linear coefficient", value = 0.15, min = 0, step = 0.01),
@@ -85,7 +87,11 @@ shinyUI(
                checkboxInput('concurrent_ramps', 'Ramp events?', FALSE),
                checkboxInput('concurrent_swings', 'Swing events?', TRUE),
                br(),
-               actionButton("update", "Update plot")
+               actionButton("update", "Update plot"),
+               br(),
+               useShinyalert(),
+               br(),
+               actionButton("optimize", "Optimize thresholds")
              )
       )),
     

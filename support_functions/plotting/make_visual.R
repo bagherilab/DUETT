@@ -1,4 +1,4 @@
-make_visual <- function(data_mat, event_locations, concurrent_events, log_colors = F, color_scale = NULL, numbering = T, numbering_offset = 0, numbering_interval = 5, axis_label_resize = 1, lwd = 0.01, fg = "black", circle_size_override = NULL, box_resize = 1, diverging = F) {
+make_visual <- function(data_mat, event_locations, concurrent_events, log_colors = F, color_scale = NULL, numbering = T, numbering_offset = 0, numbering_interval = 5, axis_label_resize = 1, lwd = 0.01, fg = "black", circle_size_override = NULL, box_resize = 1, diverging = F, event_colors = NULL) {
   
   source("support_functions/utility_functions.R")
   source("support_functions/color_to_hex.R")
@@ -15,8 +15,10 @@ make_visual <- function(data_mat, event_locations, concurrent_events, log_colors
   }
   
   # set colors
-  event_colors = list(upswing = color_to_hex("red", 0.1), downswing = color_to_hex("blue", 0.1)) # transparent
-  # event_colors = list(upswing = color_to_hex("red", 0), downswing = color_to_hex("blue", 0)) # not transparent
+  if (is.null(event_colors)) {
+    event_colors = list(upswing = color_to_hex("red", 0.1), downswing = color_to_hex("blue", 0.1)) # transparent
+    # event_colors = list(upswing = color_to_hex("red", 0), downswing = color_to_hex("blue", 0)) # not transparent
+  }
   clear_color = color_to_hex("white", 1)
   library(RColorBrewer)
   if (diverging) {

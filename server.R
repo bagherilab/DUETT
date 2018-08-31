@@ -9,7 +9,9 @@ source("support_functions/merge_replicates.R")
 source("support_functions/plotting/plot_dump_PID.R")
 source("support_functions/utility_functions.R")
 source("support_functions/find_concurrent_events.R")
+source("support_functions/optimize_thresholds.R")
 source("support_functions/plotting/make_visual.R")
+source("support_functions/optimize_modal.R")
 
 shinyServer(function(input, output) {
   
@@ -63,10 +65,11 @@ shinyServer(function(input, output) {
   })
   
   get_update <- reactive({input$update})
+  get_optimize <- reactive({input$optimize})
   
   #################### calculate for events ####################
   get_data <- reactive({
-    ifelse(is.null(input$data_file), data_file <- "example_data/SRP_wt_Rep1_rho_table.txt", data_file <- get_data_file()$datapath)
+    ifelse(is.null(input$data_file), data_file <- list("example_data/SRP_wt_Rep1_rho_table.txt", "example_data/SRP_wt_Rep2_rho_table.txt", "example_data/SRP_wt_Rep3_rho_table.txt"), data_file <- get_data_file()$datapath)
     data_mat = load_data(data_file)
   })
   get_mean_data <- reactive({
@@ -203,7 +206,26 @@ shinyServer(function(input, output) {
     }
   })
   
+  get_optimize_parameters <- reactive({
+    list(window_size_optimize = input$window_size_optimize,
+         P_start = input$P_start, P_end = input$P_end, P_interval = input$P_interval,
+         I_start = input$I_start, I_end = input$I_end, I_interval = input$I_interval,
+         D_start = input$D_start, D_end = input$D_end, D_interval = input$D_interval)
+  })
+  
   get_plotting_parameters <- reactive({
+    
+    # place modal for optimizing parameters
+    observeEvent(input$optimize, {
+      showModal(optimize_modal())
+    })
+    
+    # call optimize_thresholds
+    observeEvent(input$execute_optimize, {
+      optimize_thresholds(get_data(), get_optimize_parameters(), input$output_optimize)
+    })
+    
+    
     if (get_update() == 0) {
       return_list = NA
     } else {
