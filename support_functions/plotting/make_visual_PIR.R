@@ -1,4 +1,4 @@
-make_visual_PID <- function(event_locations, event_draw = c(-3,-1,1,3), ramp_draw = c(-1,1), event_colors = NULL, lwd = 1.2, box_resize = 1) {
+make_visual_PIR <- function(event_locations, event_draw = c(-3,-1,1,3), ramp_draw = c(-1,1), event_colors = NULL, lwd = 1.2, box_resize = 1) {
   
   source("support_functions/plotting/make_boxes.R")
   clear_color = "#FFFFFF00"
@@ -48,7 +48,6 @@ make_visual_PID <- function(event_locations, event_draw = c(-3,-1,1,3), ramp_dra
       }
       
       for (n_ramp in ramp_list) {
-        # if (n_ramp[,"col"] == 14) {browser()}
         ifelse(ramp_type > 0, event_color <- event_colors[[1]], event_color <- event_colors[[2]])
         
         # detect if single row
@@ -56,8 +55,6 @@ make_visual_PID <- function(event_locations, event_draw = c(-3,-1,1,3), ramp_dra
           n_ramp = matrix(n_ramp, ncol = 2, dimnames = list(NULL, c("row", "col")))
         }
         
-        # line_error = try(lines(x = n_ramp[,"col"], y = nrow(event_locations) - n_ramp[,"row"] + 1, col = event_color, lwd = 1.4), silent = T)
-        # if (class(line_error) == "try-error") {browser()}
         lines(x = n_ramp[,"col"], y = nrow(event_locations) - n_ramp[,"row"] + 1, col = event_color, lwd = 2)
         par(new = T)
       }

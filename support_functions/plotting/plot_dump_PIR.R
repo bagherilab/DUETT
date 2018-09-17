@@ -1,4 +1,3 @@
-
 plot_data <- function(data_vector, event_locations, concurrent_events, n_col, event_colors = c("green", "blue"), ylim = c(0,max(data_vector, na.rm = T)), mar = c(4,4,3,3), xaxis_offset = 0, xaxis_interval = 5, dot_color = "grey40", disable_title = F, first_plot = T) {
   
   num_points = length(data_vector)
@@ -55,7 +54,6 @@ plot_data <- function(data_vector, event_locations, concurrent_events, n_col, ev
     
     source("support_functions/color_to_hex.R")
     line_color = color_to_hex("forestgreen", 0)
-    # line_color = color_to_hex("orange", 0.4)
     
     relevant_rows = which(concurrent_events[, "col1"] == n_col | concurrent_events[, "col2"] == n_col)
     for (n_relevant in relevant_rows) {
@@ -75,16 +73,16 @@ plot_data <- function(data_vector, event_locations, concurrent_events, n_col, ev
 
 ########################################################################################
 
-plot_PID_cutoffs <- function(event_details, event_locations, n_col = NULL, cutoffs, event_colors = c("green", "blue")) {
+plot_PIR_cutoffs <- function(event_details, event_locations, n_col = NULL, cutoffs, event_colors = c("green", "blue")) {
   
   num_points = nrow(event_details$P_values)
-  values_list = list(event_details$P_values[,n_col,drop = F], event_details$I_values[,n_col, drop = F], event_details$D_values[,n_col, drop = F])
+  values_list = list(event_details$P_values[,n_col,drop = F], event_details$I_values[,n_col, drop = F], event_details$R_values[,n_col, drop = F])
   
   par(mar = c(2,4,2,3))
   
   xlim = c(0, num_points)
   ylim = c(-1,1)
-  PID_letters = c("P","I","D")
+  PIR_letters = c("P","I","R")
   axis_side = c(2,2,4)
   line_info = c(1, -0.9, -0.9)
   mtext_line = c(1.8, -0.1, -0.1)
@@ -97,7 +95,7 @@ plot_PID_cutoffs <- function(event_details, event_locations, n_col = NULL, cutof
   axis_info = round(seq(0,num_points,length.out=10))
   axis(1, at=axis_info, labels = axis_info)
   par(new = T)
-  for (n_PID in 1:3) {
+  for (n_PIR in 1:3) {
     
     # find event_indices for up/down/non-events
     upswing_indices = which(event_locations %in% c(1,3))
@@ -109,26 +107,26 @@ plot_PID_cutoffs <- function(event_details, event_locations, n_col = NULL, cutof
     }
     
     # normalize between -1 and 1
-    if (n_PID == 1) {
-      PID_range = c(-(1-(1 / (1+cutoffs$P))) * 2, cutoffs$P * 2)
-      temp = values_list[[n_PID]]
-      temp[(temp > 0) %in% T] = temp[(temp > 0) %in% T] / PID_range[[2]]
-      temp[(temp < 0) %in% T] = temp[(temp < 0) %in% T] / -PID_range[[1]]
+    if (n_PIR == 1) {
+      PIR_range = c(-(1-(1 / (1+cutoffs$R))) * 2, cutoffs$R * 2)
+      temp = values_list[[n_PIR]]
+      temp[(temp > 0) %in% T] = temp[(temp > 0) %in% T] / PIR_range[[2]]
+      temp[(temp < 0) %in% T] = temp[(temp < 0) %in% T] / -PIR_range[[1]]
     } else {
-      PID_range = c(-2 * cutoffs[[n_PID]], 2 * cutoffs[[n_PID]])
-      temp = values_list[[n_PID]] / PID_range[[2]]
+      PIR_range = c(-2 * cutoffs[[n_PIR]], 2 * cutoffs[[n_PIR]])
+      temp = values_list[[n_PIR]] / PIR_range[[2]]
     }
     
     # first plot non values
-    plot(x = nonevent_indices, y = temp[nonevent_indices], xlim = xlim, ylim = ylim, pch = pch_info[[n_PID]], axes = F, bty = "n", col = "grey60", xlab = "", ylab = "")
+    plot(x = nonevent_indices, y = temp[nonevent_indices], xlim = xlim, ylim = ylim, pch = pch_info[[n_PIR]], axes = F, bty = "n", col = "grey60", xlab = "", ylab = "")
     par(new = T)
-    plot(x = upswing_indices, y = temp[upswing_indices], xlim = xlim, ylim = ylim, pch = pch_info[[n_PID]], axes = F, bty = "n", col = event_colors[[1]], xlab = "", ylab = "", type = plot_type[[n_PID]])
+    plot(x = upswing_indices, y = temp[upswing_indices], xlim = xlim, ylim = ylim, pch = pch_info[[n_PIR]], axes = F, bty = "n", col = event_colors[[1]], xlab = "", ylab = "", type = plot_type[[n_PIR]])
     par(new = T)
-    plot(x = downswing_indices, y = temp[downswing_indices], xlim = xlim, ylim = ylim, pch = pch_info[[n_PID]], axes = F, bty = "n", col = event_colors[[2]], xlab = "", ylab = "", type = plot_type[[n_PID]])
+    plot(x = downswing_indices, y = temp[downswing_indices], xlim = xlim, ylim = ylim, pch = pch_info[[n_PIR]], axes = F, bty = "n", col = event_colors[[2]], xlab = "", ylab = "", type = plot_type[[n_PIR]])
     
     # put in axis and axis label
-    axis(side = axis_side[[n_PID]], at = seq(-1,1, by = 0.5), labels = round(c(PID_range[[1]], PID_range[[1]]/2, 0, PID_range[[2]]/2, PID_range[[2]]), digits = 2), line = line_info[[n_PID]], tick = F)
-    mtext(paste(PID_letters[[n_PID]], "change"), side = axis_side[[n_PID]], line = mtext_line[[n_PID]] + 1)
+    axis(side = axis_side[[n_PIR]], at = seq(-1,1, by = 0.5), labels = round(c(PIR_range[[1]], PIR_range[[1]]/2, 0, PIR_range[[2]]/2, PIR_range[[2]]), digits = 2), line = line_info[[n_PIR]], tick = F)
+    mtext(paste(PIR_letters[[n_PIR]], "change"), side = axis_side[[n_PIR]], line = mtext_line[[n_PIR]] + 1)
     par(new = T)
     
   }
