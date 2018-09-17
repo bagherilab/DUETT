@@ -1,19 +1,32 @@
 V1
 agreement,3
+<<<<<<< HEAD
 axis_label_resize,1
+=======
+axis_label_resize,0.9
+>>>>>>> 051550ee474a4d0d7c336a56572e8f69175d09a0
 box_resize,1
 column_display,2
 concurrent_distance,1
 concurrent_ramps,FALSE
 concurrent_swings,TRUE
 custom_columns,1,11,16,26,57
+<<<<<<< HEAD
 D,0.3
 data_file,list(name = c("SRP_wt_Rep1_rho_table.txt", "SRP_wt_Rep2_rho_table.txt", "SRP_wt_Rep3_rho_table.txt"), size = c(167612, 167717, 167524), type = c("text/plain", "text/plain", "text/plain"), datapath = c("C:\\Users\\Xuebert\\AppData\\Local\\Temp\\RtmpO4dDu0/5fdddc0c94c39a274586efb8/0.txt", "C:\\Users\\Xuebert\\AppData\\Local\\Temp\\RtmpO4dDu0/5fdddc0c94c39a274586efb8/1.txt", "C:\\Users\\Xuebert\\AppData\\Local\\Temp\\RtmpO4dDu0/5fdddc0c94c39a274586efb8/2.txt"))
+=======
+D,0.4
+data_file,list(name = "SRP_wt_rho_table.txt", size = 247814, type = "text/plain", datapath = "C:\\Users\\Xuebert\\AppData\\Local\\Temp\\RtmpMvB7kx/1efb152e76a808435b5b1f92/0.txt")
+>>>>>>> 051550ee474a4d0d7c336a56572e8f69175d09a0
 diverging,FALSE
 dws,1.25
 event_gap,1
 height,14
+<<<<<<< HEAD
 I,0.025
+=======
+I,0.1
+>>>>>>> 051550ee474a4d0d7c336a56572e8f69175d09a0
 I_length,default
 linear_coeff,0.15
 log_colors,FALSE
@@ -23,7 +36,11 @@ numbering_interval,5
 numbering_offset,20
 optimize,0
 outfile,optimized_SRP_averaged_replicates
+<<<<<<< HEAD
 P,0.1
+=======
+P,0.2
+>>>>>>> 051550ee474a4d0d7c336a56572e8f69175d09a0
 p_value,1e-04
 print_replicate,FALSE
 ramp_length,30

@@ -28,7 +28,11 @@ find_events <- function(P_values, I_values, R_values, linear_values, data_mat, w
     betas = NULL
     dws = NULL
   } else {
+<<<<<<< HEAD
     p_values = linear_values$R_values
+=======
+    p_values = linear_values$p_values
+>>>>>>> 051550ee474a4d0d7c336a56572e8f69175d09a0
     betas = linear_values$betas
     dws = linear_values$dws
     for (n_col in 1:num_col) {

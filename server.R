@@ -210,7 +210,11 @@ shinyServer(function(input, output) {
     list(window_size_optimize = input$window_size_optimize,
          P_start = input$P_start, P_end = input$P_end, P_interval = input$P_interval,
          I_start = input$I_start, I_end = input$I_end, I_interval = input$I_interval,
+<<<<<<< HEAD
          R_start = input$R_start, R_end = input$R_end, R_interval = input$R_interval)
+=======
+         D_start = input$D_start, D_end = input$D_end, D_interval = input$D_interval)
+>>>>>>> 051550ee474a4d0d7c336a56572e8f69175d09a0
   })
   
   get_plotting_parameters <- reactive({
