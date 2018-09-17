@@ -5,6 +5,7 @@ merge_replicates <- function(event_storage, agreement) {
     return(sapply(1:ncol(event_locations_temp), function(i) event_locations_temp[,i] %in% event_group))
   }
   
+  if (class(try(Reduce("+", lapply(event_storage, function(i) get_event_group(i[[1]], c(2,3,1.5)))) >= agreement)) == "try-error") {browser()}
   shared_upramps = Reduce("+", lapply(event_storage, function(i) get_event_group(i[[1]], c(2,3,1.5)))) >= agreement
   shared_downramps = Reduce("+", lapply(event_storage, function(i) get_event_group(i[[1]], -c(2,3,1.5)))) >= agreement
   shared_upswings = Reduce("+", lapply(event_storage, function(i) get_event_group(i[[1]], c(1,3,-1.5)))) >= agreement

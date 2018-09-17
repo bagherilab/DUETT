@@ -1,10 +1,10 @@
-make_visual <- function(data_mat, event_locations, concurrent_events, log_colors = F, color_scale = NULL, numbering = T, numbering_offset = 0, numbering_interval = 5, axis_label_resize = 1, lwd = 0.01, fg = "black", circle_size_override = NULL, box_resize = 1, diverging = F) {
+make_visual <- function(data_mat, event_locations, concurrent_events, log_colors = F, color_scale = NULL, numbering = T, numbering_offset = 0, numbering_interval = 5, axis_label_resize = 1, lwd = 0.01, fg = "black", circle_size_override = NULL, box_resize = 1, diverging = F, event_colors = NULL) {
   
   source("support_functions/utility_functions.R")
   source("support_functions/color_to_hex.R")
   source("support_functions/plotting/make_boxes.R")
   source("support_functions/plotting/axis_labels.R")
-  source("support_functions/plotting/make_visual_PID.R")
+  source("support_functions/plotting/make_visual_PIR.R")
   source("support_functions/plotting/make_visual_concurrent.R")
   
   if (log_colors) {
@@ -15,8 +15,10 @@ make_visual <- function(data_mat, event_locations, concurrent_events, log_colors
   }
   
   # set colors
-  event_colors = list(upswing = color_to_hex("red", 0.1), downswing = color_to_hex("blue", 0.1)) # transparent
-  # event_colors = list(upswing = color_to_hex("red", 0), downswing = color_to_hex("blue", 0)) # not transparent
+  if (is.null(event_colors)) {
+    event_colors = list(upswing = color_to_hex("red", 0.1), downswing = color_to_hex("blue", 0.1)) # transparent
+    # event_colors = list(upswing = color_to_hex("red", 0), downswing = color_to_hex("blue", 0)) # not transparent
+  }
   clear_color = color_to_hex("white", 1)
   library(RColorBrewer)
   if (diverging) {
@@ -34,7 +36,7 @@ make_visual <- function(data_mat, event_locations, concurrent_events, log_colors
   
   # add swing and ramp events
   par(new = T)
-  make_visual_PID(event_locations, event_draw = c(-1,1, -1.5,1.5, -3,3), ramp_draw = c(-1,1), event_colors = event_colors, box_resize = box_resize, lwd = 2)
+  make_visual_PIR(event_locations, event_draw = c(-1,1, -1.5,1.5, -3,3), ramp_draw = c(-1,1), event_colors = event_colors, box_resize = box_resize, lwd = 2)
   par(new = T)
   
   # add concurent events

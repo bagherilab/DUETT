@@ -4,12 +4,14 @@ rm(list=ls())
 
 source("support_functions/load_data.R")
 source("support_functions/sanitize.R")
-source("support_functions/ShapeSeq_events.R")
+source("support_functions/DUETT_events.R")
 source("support_functions/merge_replicates.R")
-source("support_functions/plotting/plot_dump_PID.R")
+source("support_functions/plotting/plot_dump_PIR.R")
 source("support_functions/utility_functions.R")
 source("support_functions/find_concurrent_events.R")
+source("support_functions/optimize_thresholds.R")
 source("support_functions/plotting/make_visual.R")
+source("support_functions/optimize_modal.R")
 
 shinyServer(function(input, output) {
   
@@ -34,7 +36,7 @@ shinyServer(function(input, output) {
   get_columns_display <- reactive({input$column_display})
   get_custom_columns <- reactive({sanitize(input$custom_columns, "custom_columns")})
   
-  # PID parameters
+  # PIR parameters
   get_P <- reactive({sanitize(input$P, "P")})
   get_I <- reactive({sanitize(input$I, "I")})
   get_I_length <- reactive({
@@ -42,11 +44,11 @@ shinyServer(function(input, output) {
     if (I_length == "default") {I_length = get_window_size()}
     I_length
   })
-  get_D <- reactive({sanitize(input$D, "D")})
+  get_R <- reactive({sanitize(input$R, "R")})
   # get_I_length <- reactive({sanitize(input$window_size, "window_size")}) # not actually an input
   get_window_size <- reactive({sanitize(input$window_size, "window_size")})
   get_event_gap <- reactive({sanitize(input$event_gap, "event_gap")})
-  get_noise_length <- reactive({sanitize(input$noise_length, "noise_length")})
+  get_duration <- reactive({sanitize(input$duration, "duration")})
   
   # linear ramp paramers
   get_ramp_length <- reactive({sanitize(input$ramp_length, "ramp_length")})
@@ -63,10 +65,11 @@ shinyServer(function(input, output) {
   })
   
   get_update <- reactive({input$update})
+  get_optimize <- reactive({input$optimize})
   
   #################### calculate for events ####################
   get_data <- reactive({
-    ifelse(is.null(input$data_file), data_file <- "example_data/SRP_wt_Rep1_rho_table.txt", data_file <- get_data_file()$datapath)
+    ifelse(is.null(input$data_file), data_file <- list("example_data/SRP_wt_Rep1_rho_table.txt", "example_data/SRP_wt_Rep2_rho_table.txt", "example_data/SRP_wt_Rep3_rho_table.txt"), data_file <- get_data_file()$datapath)
     data_mat = load_data(data_file)
   })
   get_mean_data <- reactive({
@@ -76,34 +79,34 @@ shinyServer(function(input, output) {
   get_ncol <- reactive({ncol(get_data()[[1]])})
   get_nrow <- reactive({nrow(get_data()[[1]])})
   
-  # PID values
-  calc_D_values <- reactive({
+  # PIR values
+  calc_P_values <- reactive({
     data_mat = get_data()
     window_size = get_window_size()
     if (window_size == 0) {
-      D_values = lapply(data_mat, function(i) i * 0)
+      P_values = lapply(data_mat, function(i) i * 0)
     } else {
-      D_values = lapply(data_mat, function(i) diff_data(i, window_size))
+      P_values = lapply(data_mat, function(i) diff_data(i, window_size))
     }
   })
   calc_I_values <- reactive({
-    D_values = calc_D_values()
+    P_values = calc_P_values()
     num_row = get_nrow()
     num_col = get_ncol()
-    I_values = lapply(1:length(D_values), function(i) matrix(NA, nrow = num_row, ncol = num_col))
+    I_values = lapply(1:length(P_values), function(i) matrix(NA, nrow = num_row, ncol = num_col))
     if (get_I_length() > num_row) {return(I_values)}
     
-    for (n_file in 1:length(D_values)) {
+    for (n_file in 1:length(P_values)) {
       for (n_col in 1:num_col) {
-        I_values[[n_file]][(get_I_length()+1):num_row,n_col] = sapply(1:(num_row-get_I_length()), function(i) sum(D_values[[n_file]][i:(i+get_I_length()),n_col])) / get_I_length()
+        I_values[[n_file]][(get_I_length()+1):num_row,n_col] = sapply(1:(num_row-get_I_length()), function(i) sum(P_values[[n_file]][i:(i+get_I_length()),n_col])) / get_I_length()
       }
     }
     I_values
   })
-  calc_P_values <- reactive({
-    D_values = calc_D_values()
+  calc_R_values <- reactive({
+    P_values = calc_P_values()
     data_mat = get_data()
-    P_values = lapply(1:length(data_mat), function(i) D_values[[i]] / abs(data_mat[[i]] - D_values[[i]]))
+    R_values = lapply(1:length(data_mat), function(i) P_values[[i]] / abs(data_mat[[i]] - P_values[[i]]))# weirdly elegant way to calculate it. the denominator reduces to the average window value
   })
   
   # linear ramp values
@@ -150,17 +153,17 @@ shinyServer(function(input, output) {
   })
   
   get_replicate_events <- reactive({
-    D_values = calc_D_values()
-    I_values = calc_I_values()
     P_values = calc_P_values()
+    I_values = calc_I_values()
+    R_values = calc_R_values()
     linear_values = calc_linear_values()
     data_mat = get_data()
     
-    num_files = length(D_values)
+    num_files = length(R_values)
     event_storage = vector("list", num_files)
     concurrent_events = vector("list", num_files)
     for (n_file in 1:num_files) {
-      event_storage[[n_file]] = do.call(ShapeSeq_events, list(P_values[[n_file]], I_values[[n_file]], D_values[[n_file]], linear_values[[n_file]], data_mat[[n_file]], get_window_size(), get_I_length(), get_ramp_length(), get_noise_length(), get_event_gap(), cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), linear_coeff = get_linear_coeff(), dws = get_dws())))
+      event_storage[[n_file]] = do.call(DUETT_events, list(P_values[[n_file]], I_values[[n_file]], R_values[[n_file]], linear_values[[n_file]], data_mat[[n_file]], get_window_size(), get_I_length(), get_ramp_length(), get_duration(), get_event_gap(), cutoffs = list(P = get_P(), I = get_I(), R = get_R(), p_value = get_p_value(), linear_coeff = get_linear_coeff(), dws = get_dws())))
       
       concurrent_events[[n_file]] = find_concurrent_events(event_storage[[n_file]][[1]], concurrent_distance = get_concurrent_distance(), comparison_point = "start", event_types = get_conc_event_types())
     }
@@ -203,7 +206,26 @@ shinyServer(function(input, output) {
     }
   })
   
+  get_optimize_parameters <- reactive({
+    list(window_size_optimize = input$window_size_optimize,
+         P_start = input$P_start, P_end = input$P_end, P_interval = input$P_interval,
+         I_start = input$I_start, I_end = input$I_end, I_interval = input$I_interval,
+         R_start = input$R_start, R_end = input$R_end, R_interval = input$R_interval)
+  })
+  
   get_plotting_parameters <- reactive({
+    
+    # place modal for optimizing parameters
+    observeEvent(input$optimize, {
+      showModal(optimize_modal())
+    })
+    
+    # call optimize_thresholds
+    observeEvent(input$execute_optimize, {
+      optimize_thresholds(get_data(), get_optimize_parameters(), input$output_optimize)
+    })
+    
+    
     if (get_update() == 0) {
       return_list = NA
     } else {
@@ -264,7 +286,7 @@ shinyServer(function(input, output) {
           make_col_detail_plots(
             my_col_group, 
             get_data(), event_locations, event_details, concurrent_events,
-            cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), linear_coeff = get_linear_coeff(), dws = get_dws()), 
+            cutoffs = list(P = get_P(), I = get_I(), R = get_R(), p_value = get_p_value(), linear_coeff = get_linear_coeff(), dws = get_dws()), 
             event_colors = c("red", "blue"),
             ylim = get_plotting_parameters()$ylim,
             xaxis_offset = get_numbering_offset(),
@@ -359,23 +381,23 @@ shinyServer(function(input, output) {
         event_storage = get_replicate_events()[[1]]
         
         for (n_file in 1:length(event_details)) {
-          write_table(event_storage[[n_file]][[2]]$P_values, put$outfile, "P", file_ID)
-          write_table(event_storage[[n_file]][[2]]$I_values, put$outfile, "I", file_ID)
-          write_table(event_storage[[n_file]][[2]]$D_values, put$outfile, "D", file_ID)
-          write_table(event_storage[[n_file]][[2]]$p_values, put$outfile, "p_values", file_ID)
-          write_table(event_storage[[n_file]][[2]]$betas, put$outfile, "betas", file_ID)
-          write_table(event_storage[[n_file]][[2]]$dws, put$outfile, "dws", file_ID)
+          write_table(event_storage[[n_file]][[2]]$P_values, "P", n_file)
+          write_table(event_storage[[n_file]][[2]]$I_values, "I", n_file)
+          write_table(event_storage[[n_file]][[2]]$R_values, "R", n_file)
+          write_table(event_storage[[n_file]][[2]]$p_values, "p_values", n_file)
+          write_table(event_storage[[n_file]][[2]]$betas, "betas", n_file)
+          write_table(event_storage[[n_file]][[2]]$dws, "dws", n_file)
         }
       }
       
       event_details = get_events()[[2]]
       
-      write_table(event_details$P_values, put$outfile, "P", NULL)
-      write_table(event_details$I_values, put$outfile, "I", NULL)
-      write_table(event_details$D_values, put$outfile, "D", NULL)
-      write_table(event_details$p_values, put$outfile, "p_values", NULL)
-      write_table(event_details$betas, put$outfile, "betas", NULL)
-      write_table(event_details$dws, put$outfile, "dws", NULL)
+      write_table(event_details$P_values, "P", NULL)
+      write_table(event_details$I_values, "I", NULL)
+      write_table(event_details$R_values, "R", NULL)
+      write_table(event_details$p_values, "p_values", NULL)
+      write_table(event_details$betas, "betas", NULL)
+      write_table(event_details$dws, "dws", NULL)
     })
   })
   
@@ -471,7 +493,7 @@ shinyServer(function(input, output) {
             make_col_detail_plots(
               my_col_group, data_mat[n_file], event_storage[[n_file]][[1]],  # be sure to pass data_mat as a list
               event_storage[[n_file]][[2]], concurrent_events[[n_file]],
-              cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), linear_coeff = get_linear_coeff(), dws = get_dws()), 
+              cutoffs = list(P = get_P(), I = get_I(), R = get_R(), p_value = get_p_value(), linear_coeff = get_linear_coeff(), dws = get_dws()), 
               event_colors = c("red", "blue"),
               ylim = get_plotting_parameters()$ylim,
               xaxis_offset = get_numbering_offset(),
@@ -501,7 +523,7 @@ shinyServer(function(input, output) {
         make_col_detail_plots(
           my_col_group, 
           get_data(), event_locations, event_details, concurrent_events,
-          cutoffs = list(P = get_P(), I = get_I(), D = get_D(), p_value = get_p_value(), linear_coeff = get_linear_coeff(), dws = get_dws()), 
+          cutoffs = list(P = get_P(), I = get_I(), R = get_R(), p_value = get_p_value(), linear_coeff = get_linear_coeff(), dws = get_dws()), 
           event_colors = c("red", "blue"),
           ylim = get_plotting_parameters()$ylim,
           xaxis_offset = get_numbering_offset(),

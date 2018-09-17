@@ -39,32 +39,29 @@ diff_data <- function(data_mat, window_size = 10, grow_window = F) {
 find_runs <- function(location_swing, event_types = c(-3,-1.5,-1,1,1.5,3)) {
   
   event_points_new = matrix(NA, ncol = 5, nrow = 0, dimnames = list(NULL, c("col", "start", "middle", "end", "type")))
-  for (n_col in 1:ncol(location_swing)) {
+  # find columns with events
+  has_events = which(colSums(abs(location_swing), na.rm = T) > 0)
+  
+  for (n_col in has_events) {
     temp = rle(location_swing[,n_col])
     relevant_indices = which(temp$values %in% event_types)
+    start_points = cumsum(c(1, temp$lengths))
+    start_points = start_points[relevant_indices]
     
-    for (index in relevant_indices) {
-      # edge case when index=1
-      if (index == 1) {
-        start_point = 1
-        end_point = start_point + temp$lengths[[index]] - 1
-      } else {
-        start_point = sum(temp$lengths[1:(index-1)]) + 1
-        end_point = start_point + temp$lengths[[index]] - 1
-      }
-      
-      # assign event type (jump=1, ramp=2)
-      event_type = temp$values[[index]]
-      
-      event_points_new = rbind(event_points_new, c(n_col, start_point, floor(median(c(start_point, end_point))), end_point, event_type))
+    end_points = temp$lengths[relevant_indices] + start_points - 1
+    mid_points = floor((start_points + end_points) / 2)
+    
+    if (length(start_points) > 0) {
+      event_points_new = rbind(event_points_new, cbind(n_col, start_points, mid_points, end_points, temp$values[relevant_indices]))
     }
+    
   }
   return(event_points_new)
 }
 
 ############################ clean events ############################
 
-clean_events <- function(event_locations, noise_length = 1, event_gap = 1) {
+clean_events <- function(event_locations, duration = 1, event_gap = 1) {
   
   event_runs = find_runs(event_locations)
   num_events = nrow(event_runs)
@@ -83,6 +80,10 @@ clean_events <- function(event_locations, noise_length = 1, event_gap = 1) {
       same_column_row = ((n_row+1):nrow(event_runs))[same_column_row] # reference the indices in event_runs
       
       for (n_event in same_column_row) {
+        
+        # error_message = try(abs(event_runs[[n_event, "end"]] - event_runs[[n_row, "start"]]))
+        # if (class(error_message) == "try-error") {browser()}
+        
         upstream_distance = abs(event_runs[[n_event, "end"]] - event_runs[[n_row, "start"]])
         downstream_distance = abs(event_runs[[n_event, "start"]] - event_runs[[n_row, "end"]])
         
@@ -115,7 +116,7 @@ clean_events <- function(event_locations, noise_length = 1, event_gap = 1) {
   #### drop short events ####
   if (num_events > 0) {
     distances = sapply(1:num_events, function(i) abs(event_runs[i, "start"] - event_runs[i, "end"]))
-    remove_event_run_row = which(distances <= (noise_length - 1))
+    remove_event_run_row = which(distances <= (duration - 1))
     
     # find events to remove
     for (n_remove in remove_event_run_row) {
@@ -140,5 +141,18 @@ clean_events <- function(event_locations, noise_length = 1, event_gap = 1) {
   return(event_locations)
 }
 
-############################  ############################
+############################ expand runs ############################
+# this function turns the event_runs matrix in data_mat form
+# it is probably only run by optimize_thresholds
 
+expand_runs <- function(event_runs, data_mat) {
+  # data_mat is not a list
+  # event_points_new = matrix(NA, ncol = 5, nrow = 0, dimnames = list(NULL, c("col", "start", "middle", "end", "type")))
+  
+  event_locations = data_mat * 0
+  for (n_row in 1:nrow(event_runs)) {
+    event_locations[event_runs[[n_row, "start"]]:event_runs[[n_row, "end"]], event_runs[[n_row, "col"]]] = event_runs[[n_row, "type"]]
+  }
+  
+  return(event_locations)
+}
