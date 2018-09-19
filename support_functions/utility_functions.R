@@ -81,13 +81,8 @@ clean_events <- function(event_locations, duration = 1, event_gap = 1) {
       
       for (n_event in same_column_row) {
         
-<<<<<<< HEAD
         # error_message = try(abs(event_runs[[n_event, "end"]] - event_runs[[n_row, "start"]]))
         # if (class(error_message) == "try-error") {browser()}
-=======
-        error_message = try(abs(event_runs[[n_event, "end"]] - event_runs[[n_row, "start"]]))
-        if (class(error_message) == "try-error") {browser()}
->>>>>>> 051550ee474a4d0d7c336a56572e8f69175d09a0
         
         upstream_distance = abs(event_runs[[n_event, "end"]] - event_runs[[n_row, "start"]])
         downstream_distance = abs(event_runs[[n_event, "start"]] - event_runs[[n_row, "end"]])
