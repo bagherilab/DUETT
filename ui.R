@@ -62,7 +62,6 @@ shinyUI(
                titlePanel("PID"),
                
                numericInput("agreement", label = "Replicate agreement", value = 3, min = 1, step = 1),
-<<<<<<< HEAD
                numericInput("P", label = "Absolute (P)", value = 0.2, min = 0, step = 0.1),
                numericInput("I", label = "Integral (I)", value = 0.25, min = 0, step = 0.1),
                textInput("I_length", label = "I length", value = "default"),
@@ -71,16 +70,6 @@ shinyUI(
                
                titlePanel(h4("Noise parameters")),
                numericInput("duration", label = "Event duration", value = 4, min = 0, step = 1),
-=======
-               numericInput("P", label = "Proportional (P)", value = 0.2, min = 0, step = 0.1),
-               numericInput("I", label = "Integral (I)", value = 0.25, min = 0, step = 0.1),
-               textInput("I_length", label = "I length", value = "default"),
-               numericInput("D", label = "Differential (D)", value = 0.5, min = 0, step = 0.1),
-               numericInput("window_size", label = "Window size", value = 9, min = 1, step = 1),
-               
-               titlePanel(h4("Noise parameters")),
-               numericInput("noise_length", label = "Noise length", value = 4, min = 0, step = 1),
->>>>>>> 051550ee474a4d0d7c336a56572e8f69175d09a0
                numericInput("event_gap", label = "Event gap", value = 1, min = 0, step = 1)
              )),
       
@@ -94,10 +83,10 @@ shinyUI(
                
                br(),
                numericInput("concurrent_distance", label = "Concurrency distance", value = 2, min = -1, step = 1),
-               tags$head(tags$style(HTML('#update{background-color:lightgreen}'))),
                checkboxInput('concurrent_ramps', 'Ramp events?', FALSE),
                checkboxInput('concurrent_swings', 'Swing events?', TRUE),
                br(),
+               tags$head(tags$style(HTML('#update{background-color:lightgreen}'))),
                actionButton("update", "Update plot"),
                br(),
                useShinyalert(),

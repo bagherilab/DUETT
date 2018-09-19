@@ -91,7 +91,6 @@ plotting_parameters <- reactive({
     optimize_thresholds(get_val$data(), get_val$optimize_parameters(), input$output_optimize)
   })
   
-  
   if (get_val$update() == 0) {
     return_list = NA
   } else {

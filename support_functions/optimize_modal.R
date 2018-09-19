@@ -6,6 +6,7 @@ optimize_modal <- function() {
       hr(),
       span("Optimize PIR parameters? (This will take some time)  "),
       modalButton("Cancel"),
+      tags$head(tags$style(HTML('#execute_optimize{background-color:lightgreen}'))),
       actionButton("execute_optimize", "Yes")),
     fluidRow(
       column(4, wellPanel(

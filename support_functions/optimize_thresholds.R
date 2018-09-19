@@ -7,6 +7,7 @@ optimize_thresholds <- function(data_mat, optimize_parameters, outfile_optimize)
   source("support_functions/merge_replicates.R")
   source("support_functions/find_events_optimize.R")
   source("support_functions/find_events.R")
+  source("support_functions/find_ND.R")
   
   # record parameters
   window_size = optimize_parameters$window_size_optimize
@@ -74,7 +75,7 @@ optimize_thresholds <- function(data_mat, optimize_parameters, outfile_optimize)
         for (n_file in 1:num_files) {
           return_list = find_events(P_values[[n_file]], 
                                     I_values[[n_file]], 
-                                    D_values[[n_file]], 
+                                    R_values[[n_file]], 
                                     NULL,
                                     data_mat[[n_file]], 
                                     window_size = window_size, 
@@ -125,10 +126,40 @@ optimize_thresholds <- function(data_mat, optimize_parameters, outfile_optimize)
   winner = which(total_distance == min(total_distance), arr.ind = T)
   
   end_time = Sys.time()
-  save(data_mat, num_events, threshold_distance, event_distance, total_distance, winner, event_scan, D_scan, I_scan, R_scan, start_time, end_time, file = paste(outfile_optimize, ".RData", sep = ""))
+  save(data_mat, num_events, threshold_distance, event_distance, total_distance, winner, event_scan, P_scan, I_scan, R_scan, start_time, end_time, file = paste(outfile_optimize, ".RData", sep = ""))
   
   event_locations = expand_runs(event_scan[[winner[[1]], winner[[2]], winner[[3]]]], data_mat[[1]]) # convert to event_locations format
   
+  ################################## output
+  
+  pdf(paste( "Results were saved to ", outfile_optimize, ".pdf", sep = ""))
+  plot(0:100, 0:100, type = "n", xaxt = "n", yaxt = "n", main = "", xlab = "", ylab = "", bty = "n")
+  text(0, 100, "Optimized thresholds", cex = 1.5, pos = 4)
+  text(0, 95, paste("P=", P_scan[[winner[[1]]]]), pos = 4)
+  text(0, 90, paste("I=", I_scan[[winner[[2]]]]), pos = 4)
+  text(0, 85, paste("R=", R_scan[[winner[[3]]]]), pos = 4)
+  text(0, 80, paste("Number of events = ", num_events[[winner[[1]], winner[[2]], winner[[3]]]], sep = ""), pos = 4)
+  
+  text(100, 100, "Other parameters", cex = 1.5, pos = 2)
+  text(rep(100, 10), seq(95, 50, -5), paste(names(optimize_parameters), optimize_parameters, sep = "="), pos = 2)
+  
+  text(0, 50, paste("Computational time:", round(end_time-start_time, 2), "seconds"), pos = 4)
+  
+  # draw the pareto curve
+  temp = cbind(matrix(threshold_distance/max(threshold_distance), ncol = 1), matrix(event_distance, ncol = 1))
+  ND = find_ND(temp)
+  # par(mar = c(8,8,8,8))
+  plot(x=temp[ND,1], y=temp[ND,2], xlab = "Normalized threshold sum", ylab = "Normalized event number", xlim = c(0,1), ylim = c(0,1), col = "grey50", pch = 20, cex = 2, main = "Elbow criterion for threshold selection")
+  par(new = T)
+  # plot the winner
+  plot(x=threshold_distance[winner]/max(threshold_distance), y=event_distance[winner], xaxt = "n", yaxt = "n", xlim=c(0,1), ylim=c(0,1), xlab = "", ylab = "", bty = "n", pch = 20, col = "red", cex = 3)
+  lines(x = c(0,threshold_distance[winner]/max(threshold_distance)), y = c(0, event_distance[winner]), lty = 2)
+  
+  dev.off()
+  ################################## 
+  
   print("Optimizing thresholds is complete")
   print(paste( "Results were saved to ", outfile_optimize, ".RData", sep = ""))
+  print(paste( "Results were saved to ", outfile_optimize, ".pdf", sep = ""))
+  
 }
