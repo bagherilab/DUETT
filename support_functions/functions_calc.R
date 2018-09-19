@@ -88,12 +88,9 @@ events <- reactive({
         linear_values = calc$linear_values()
         data_mat = get_val$data()
       
-        # browser()
-      event_storage = do.call(DUETT_events, list(P_values, I_values, R_values, linear_values, data_mat, get_val$window_size(), get_val$I_length(), get_val$ramp_length(), get_val$duration(), get_val$event_gap(), cutoffs = list(P = get_val$P(), I = get_val$I(), R = get_val$R(), p_value = get_val$p_value(), linear_coeff = get_val$linear_coeff(), dws = get_val$dws())))[[1]]
-      browser()
+      event_storage = do.call(DUETT_events, list(P_values, I_values, R_values, linear_values, data_mat, get_val$window_size(), get_val$I_length(), get_val$ramp_length(), get_val$duration(), get_val$event_gap(), cutoffs = list(P = get_val$P(), I = get_val$I(), R = get_val$R(), p_value = get_val$p_value(), linear_coeff = get_val$linear_coeff(), dws = get_val$dws()), get_val$concurrent_distance(), conc_event_types = get_val$conc_event_types()))[[1]]
       
-      
-      event_storage = DUETT_events()[[1]]
+      # event_storage = event_storage[[1]]
       num_files = length(event_storage)
       
       if (num_files > 1) {

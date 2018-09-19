@@ -1,8 +1,7 @@
 master_plotting <- reactive({
   
-  # browser()
   return_list = calc$events()
-  # browser()
+  
   if (identical(NA, return_list)) {return()}
   event_locations = return_list[[1]]
   event_details = return_list[[2]]
