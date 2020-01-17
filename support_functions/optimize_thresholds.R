@@ -132,7 +132,7 @@ optimize_thresholds <- function(data_mat, optimize_parameters, outfile_optimize)
   
   ################################## output
   
-  pdf(paste( "Results were saved to ", outfile_optimize, ".pdf", sep = ""))
+  pdf(paste(outfile_optimize, ".pdf", sep = ""))
   plot(0:100, 0:100, type = "n", xaxt = "n", yaxt = "n", main = "", xlab = "", ylab = "", bty = "n")
   text(0, 100, "Optimized thresholds", cex = 1.5, pos = 4)
   text(0, 95, paste("P=", P_scan[[winner[[1]]]]), pos = 4)

@@ -62,7 +62,7 @@ optimize <- reactive({input$optimize})
 
 data <- reactive({
   # ifelse(is.null(input$data_file), data_file <- list("example_data/SRP_wt_Rep1_rho_table.txt", "example_data/SRP_wt_Rep2_rho_table.txt", "example_data/SRP_wt_Rep3_rho_table.txt"), data_file <- get_data_file()$datapath)
-  ifelse(is.null(input$data_file), data_file <- "example_data/SRP_wt_Rep1_rho_table.txt", data_file <- get_val$data_file())
+  ifelse(is.null(input$data_file), data_file <- "example_data/SRP_wt_Rep1_rho_table.txt", data_file <- get_val$data_file()$datapath)
   data_mat = load_data(data_file)
 })
 mean_data <- reactive({
